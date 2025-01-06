@@ -1,0 +1,13 @@
+package at.discord.bot.exception;
+
+public enum ErrorCode {
+
+    INVALID_ARGUMENT,
+    REQUIRED_FIELD_NOT_SET,
+    OPENAI_REQUEST_FAILURE,
+    PRODUCT_NOT_FOUND,
+    BAD_REQUEST,
+    PRODUCT_SOLD_OUT,
+    EMPTY_ORDER,
+    INTERNAL_SERVER_ERROR
+}

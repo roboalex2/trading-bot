@@ -1,0 +1,40 @@
+services:
+  discord-bot:
+    build:
+      context: ./discord-bot
+      dockerfile: ./Dockerfile
+    environment:
+      - SPRING_DATASOURCE_USERNAME
+      - SPRING_DATASOURCE_PASSWORD
+      - SPRING_DATASOURCE_URL
+    depends_on:
+      - db
+    networks:
+      - internal
+    expose:
+      - 8080
+    restart: always
+
+  db:
+    image: postgres:latest
+    ports:
+      - "5432:5432" # For development purposes (remove before deployment)
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin1234
+      POSTGRES_DB: trading-bot
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - internal
+    expose:
+      - 5432
+    restart: always
+
+networks:
+  internal:
+    driver: bridge
+    external: false
+
+volumes:
+  db-data:

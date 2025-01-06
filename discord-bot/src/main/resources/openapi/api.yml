@@ -1,0 +1,89 @@
+openapi: 3.0.1
+info:
+  title: v1 API
+  version: 1.0.0
+servers:
+  - url: /discord-bot/api/v1
+paths:
+  /example:
+    get:
+      description: Get all products with pagination
+      tags:
+        - OrderController
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: Page number
+        - in: query
+          name: amount
+          schema:
+            type: integer
+          description: Amount of products per page
+      responses:
+        200:
+          description: List of products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPage'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ProductPage'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: 'api-error.yml#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: 'api-error.yml#/components/schemas/ErrorResponse'
+        500:
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: 'api-error.yml#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: 'api-error.yml#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        aiDescription:
+          type: string
+        price:
+          type: number
+          format: float
+        categories:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            type: string
+        availableCount:
+          type: integer
+    ProductPage:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+        totalPages:
+          type: integer
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'

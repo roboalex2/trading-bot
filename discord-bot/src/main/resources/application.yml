@@ -1,0 +1,42 @@
+server:
+  servlet:
+    context-path: /discord-bot
+
+spring:
+  application.name: discord-bot
+  datasource:
+    url: "jdbc:h2:~/local_db"
+    username: changeme
+    password: changeme
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    hibernate:
+      ddl-auto: update
+  servlet:
+    multipart.enabled: true
+    multipart.max-file-size: 25MB
+    multipart.max-request-size: 25MB
+
+springdoc:
+  swagger-ui:
+    urls:
+      - url: /openapi/api.yml
+        name: Base API
+    path: /swagger-ui.html
+  api-docs:
+    enabled: false
+
+logging.level:
+  org: info
+  at.idk: info
+  com.zaxxer.hikari: info
+
+binance:
+  base-url: "https://api.binance.com"
+  base-websocket: "wss://stream.binance.com:9443"
+  base-websocket-api: "wss://ws-api.binance.com:443/ws-api/v3"
+
+discord:
+  token: "MTMyNTk2NzMyNDA3OTE5NDEzMg.GmBjHk.IK8EKpq2i6sXT5up_OyEfaF5etTcaZifAZzfWo"
+  alert-channel: 1325967593739260007

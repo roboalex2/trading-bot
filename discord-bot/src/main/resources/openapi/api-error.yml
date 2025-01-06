@@ -1,0 +1,15 @@
+components:
+  schemas:
+    ErrorResponse:
+      required:
+        - "message"
+        - "code"
+      properties:
+        "message":
+          description: Cause of the error explained as text/description
+          type: string
+          minLength: 3
+        "code":
+          description: Error code
+          type: string
+          minLength: 5
