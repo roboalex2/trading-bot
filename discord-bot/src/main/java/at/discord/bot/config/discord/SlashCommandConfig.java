@@ -21,9 +21,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SlashCommandConfig {
 
+
     private final JDA jdaInstance;
     private final List<ListenerAdapter> eventListeners;
-    public static final String BINANCE_KEY_COMMAND = "binance-key";
     @EventListener(ApplicationReadyEvent.class)
     public void configureRuntime() {
         jdaInstance.addEventListener(eventListeners.toArray());
@@ -49,18 +49,20 @@ public class SlashCommandConfig {
                                         ),
                                 new SubcommandData("list", "List currently present price alerts")
                         ),
-                Commands.slash(BINANCE_KEY_COMMAND, "Manage your Binance API key")
+                Commands.slash(SlashCommands.BINANCE_KEY, "Manage your Binance API key")
                         .setGuildOnly(true)
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
                         .addSubcommands(
                                 new SubcommandData("set", "Set your Binance API key")
                                         .addOptions(
-                                                new OptionData(OptionType.STRING, "api-key", "The Binance API key to set")
+                                                new OptionData(OptionType.STRING, "api-key", "Your Binance API key")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.ATTACHMENT, "secret-api-key", "Upload your secret Binance API key as a file")
                                                         .setRequired(true)
                                         ),
                                 new SubcommandData("clear", "Clear your Binance API key")
                         ),
-                Commands.slash(SlashCommands.Order_Market, "Place a market order on Binance")
+                Commands.slash(SlashCommands.ORDER_MARKET, "Place a market order on Binance")
                         .setGuildOnly(true)
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
                         .addSubcommands(
@@ -101,6 +103,12 @@ public class SlashCommandConfig {
                                                 new OptionData(OptionType.INTEGER, "id", "The ID of the order to cancel")
                                                         .setRequired(true)
                                         )
+                        ),
+                Commands.slash(SlashCommands.ASSET, "View your asset balances")
+                        .setGuildOnly(true)
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
+                        .addSubcommands(
+                                new SubcommandData("list", "View all assets and their balances")
                         )
         ).queue();
     }

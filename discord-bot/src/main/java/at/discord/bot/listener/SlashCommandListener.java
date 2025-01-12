@@ -2,10 +2,7 @@ package at.discord.bot.listener;
 
 import at.discord.bot.config.discord.SlashCommands;
 import at.discord.bot.service.binance.SymbolService;
-import at.discord.bot.service.command.BinanceKeyCommandService;
-import at.discord.bot.service.command.OrderLimitCommandService;
-import at.discord.bot.service.command.PriceAlertCommandService;
-import at.discord.bot.service.command.OrderMarketCommandService;
+import at.discord.bot.service.command.*;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -25,6 +22,7 @@ public class SlashCommandListener extends ListenerAdapter {
     private final OrderMarketCommandService orderMarketCommandService;
     private final SymbolService symbolService;
     private final OrderLimitCommandService orderLimitCommandService;
+    private final AssetCommandService assetCommandService;
     //implement new service
 
     @Override
@@ -38,12 +36,14 @@ public class SlashCommandListener extends ListenerAdapter {
             case SlashCommands.BINANCE_KEY:
                 binanceKeyCommandService.processCommand(event);
                 break;
-            case SlashCommands.Order_Market:
+            case SlashCommands.ORDER_MARKET:
                 orderMarketCommandService.processCommand(event);
                 break;
             case SlashCommands.ORDER_LIMIT:
                 orderLimitCommandService.processCommand(event);
                 break;
+            case SlashCommands.ASSET:
+                assetCommandService.processCommand(event);
             default:
                 break;
         }
