@@ -87,6 +87,29 @@ public class SlashCommandConfig {
                                                 new OptionData(OptionType.STRING, "quantity", "The quantity of the asset to sell")
                                                         .setRequired(true)
                                         )
+                        ),
+                Commands.slash(SlashCommands.ORDER_LIMIT, "Manage limit orders on Binance")
+                        .setGuildOnly(true)
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
+                        .addSubcommands(
+                                new SubcommandData("create", "Create a limit order")
+                                        .addOptions(
+                                                new OptionData(OptionType.STRING, "buy_or_sell", "Place a limit buy or sell order")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.STRING, "symbol", "The trading pair symbol (e.g., BTC/USDT)")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.STRING, "quantity", "The quantity of the asset to buy or sell")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.STRING, "price", "The price at which to place the order")
+                                                        .setRequired(true)
+                                        ),
+                                new SubcommandData("list", "List all open limit orders")
+                                        .setDescription("Shows all open limit orders that have not been fulfilled."),
+                                new SubcommandData("cancel", "Cancel a limit order")
+                                        .addOptions(
+                                                new OptionData(OptionType.INTEGER, "id", "The ID of the order to cancel")
+                                                        .setRequired(true)
+                                        )
                         )
         ).queue();
     }

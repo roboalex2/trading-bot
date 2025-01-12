@@ -2,6 +2,7 @@ package at.discord.bot.listener;
 
 import at.discord.bot.config.discord.SlashCommands;
 import at.discord.bot.service.binance.SymbolService;
+import at.discord.bot.service.command.OrderLimitCommandService;
 import at.discord.bot.service.command.PriceAlertCommandService;
 import at.discord.bot.service.command.BinanceCredentialsCommandService;
 import at.discord.bot.service.command.PlaceMarketOrderCommandService;
@@ -23,6 +24,7 @@ public class SlashCommandListener extends ListenerAdapter {
     private final BinanceCredentialsCommandService binanceCredentialsCommandService;
     private final PlaceMarketOrderCommandService placeMarketOrderCommandService;
     private final SymbolService symbolService;
+    private final OrderLimitCommandService orderLimitCommandService;
     //implement new service
 
     @Override
@@ -38,6 +40,9 @@ public class SlashCommandListener extends ListenerAdapter {
                 break;
             case SlashCommands.PLACE_MARKET_ORDER:
                 placeMarketOrderCommandService.processCommand(event);
+                break;
+            case SlashCommands.ORDER_LIMIT:
+                orderLimitCommandService.processCommand(event);
                 break;
             default:
                 break;
