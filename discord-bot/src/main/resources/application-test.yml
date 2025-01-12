@@ -14,3 +14,7 @@ logging.level:
   org: info
   at.idk: info
   com.zaxxer.hikari: info
+
+discord:
+  token: "NO-TOKEN"
+  alert-channel: 1325967593739260007

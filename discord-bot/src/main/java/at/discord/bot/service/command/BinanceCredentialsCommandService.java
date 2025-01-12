@@ -38,9 +38,6 @@ public class BinanceCredentialsCommandService {
             case "delete":
                 deleteBinanceCredentials(event);
                 break;
-            case "list":
-                listBinanceCredentials(event);
-                break;
             default:
                 break;
         }
@@ -102,23 +99,5 @@ public class BinanceCredentialsCommandService {
                     label
             )).queue();
         }
-    }
-
-    private void listBinanceCredentials(SlashCommandInteractionEvent event) {
-        List<BinanceCredentialsEntity> credentialsList = binanceCredentialsService.listCredentials();
-
-        if (credentialsList.isEmpty()) {
-            event.getHook().sendMessage("No Binance credentials found.")
-                    .queue();
-            return;
-        }
-
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("The following Binance credentials are present: \n```");
-        credentialsList.forEach(credentials ->
-                stringBuilder.append(credentials.getLabel() + " : " + credentials.getApiKey() + "\n"));
-        stringBuilder.append("```");
-
-        event.getHook().sendMessage(stringBuilder.toString()).queue();
     }
 }

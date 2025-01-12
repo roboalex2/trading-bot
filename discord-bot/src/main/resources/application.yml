@@ -33,6 +33,7 @@ logging.level:
   com.zaxxer.hikari: info
 
 binance:
+  credentials-encryption-key: "top-secret"
   base-url: "https://api.binance.com"
   base-websocket: "wss://stream.binance.com:9443"
   base-websocket-api: "wss://ws-api.binance.com:443/ws-api/v3"

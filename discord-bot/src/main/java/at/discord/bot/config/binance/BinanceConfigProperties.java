@@ -16,6 +16,8 @@ import org.springframework.validation.annotation.Validated;
 @NoArgsConstructor
 public class BinanceConfigProperties {
     @NotNull
+    private String credentialsEncryptionKey;
+    @NotNull
     private String baseUrl;
     @NotNull
     private String baseWebsocket;
