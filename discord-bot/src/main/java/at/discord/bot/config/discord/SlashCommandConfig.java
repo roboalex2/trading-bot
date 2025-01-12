@@ -68,6 +68,25 @@ public class SlashCommandConfig {
                                                         .setRequired(true)
                                         ),
                                 new SubcommandData("list", "List all stored Binance API keys")
+                        ),
+                Commands.slash(SlashCommands.PLACE_MARKET_ORDER, "Place a market order on Binance")
+                        .setGuildOnly(true)
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
+                        .addSubcommands(
+                                new SubcommandData("buy", "Place a market buy order")
+                                        .addOptions(
+                                                new OptionData(OptionType.STRING, "symbol", "The trading pair symbol (e.g., BTC/USDT)")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.STRING, "quantity", "The quantity of the asset to buy")
+                                                        .setRequired(true)
+                                        ),
+                                new SubcommandData("sell", "Place a market sell order")
+                                        .addOptions(
+                                                new OptionData(OptionType.STRING, "symbol", "The trading pair symbol (e.g., BTC/USDT)")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.STRING, "quantity", "The quantity of the asset to sell")
+                                                        .setRequired(true)
+                                        )
                         )
         ).queue();
     }

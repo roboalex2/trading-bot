@@ -4,6 +4,7 @@ import at.discord.bot.config.discord.SlashCommands;
 import at.discord.bot.service.binance.SymbolService;
 import at.discord.bot.service.command.PriceAlertCommandService;
 import at.discord.bot.service.command.BinanceCredentialsCommandService;
+import at.discord.bot.service.command.PlaceMarketOrderCommandService;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -20,6 +21,7 @@ public class SlashCommandListener extends ListenerAdapter {
 
     private final PriceAlertCommandService priceAlertCommandService;
     private final BinanceCredentialsCommandService binanceCredentialsCommandService;
+    private final PlaceMarketOrderCommandService placeMarketOrderCommandService;
     private final SymbolService symbolService;
     //implement new service
 
@@ -33,6 +35,9 @@ public class SlashCommandListener extends ListenerAdapter {
                 break;
             case SlashCommands.BINANCE_CREDENTIALS:
                 binanceCredentialsCommandService.processCommand(event);
+                break;
+            case SlashCommands.PLACE_MARKET_ORDER:
+                placeMarketOrderCommandService.processCommand(event);
                 break;
             default:
                 break;
