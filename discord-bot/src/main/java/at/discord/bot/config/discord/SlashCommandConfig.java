@@ -48,6 +48,26 @@ public class SlashCommandConfig {
                                                         .setRequired(true)
                                         ),
                                 new SubcommandData("list", "List currently present price alerts")
+                        ),
+                Commands.slash(SlashCommands.BINANCE_CREDENTIALS, "Manage Binance API credentials")
+                        .setGuildOnly(true)
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
+                        .addSubcommands(
+                                new SubcommandData("add", "Add a new Binance API key")
+                                        .addOptions(
+                                                new OptionData(OptionType.STRING, "apiKey", "Your Binance API key")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.STRING, "apiSecret", "Your Binance API secret key")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.STRING, "label", "A label to identify your API key")
+                                                        .setRequired(true)
+                                        ),
+                                new SubcommandData("delete", "Delete an existing Binance API key")
+                                        .addOptions(
+                                                new OptionData(OptionType.STRING, "label", "Label of the API key to delete")
+                                                        .setRequired(true)
+                                        ),
+                                new SubcommandData("list", "List all stored Binance API keys")
                         )
         ).queue();
     }

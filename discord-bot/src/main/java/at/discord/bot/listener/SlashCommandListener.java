@@ -3,6 +3,7 @@ package at.discord.bot.listener;
 import at.discord.bot.config.discord.SlashCommands;
 import at.discord.bot.service.binance.SymbolService;
 import at.discord.bot.service.command.PriceAlertCommandService;
+import at.discord.bot.service.command.BinanceCredentialsCommandService;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -18,7 +19,9 @@ import java.util.stream.Collectors;
 public class SlashCommandListener extends ListenerAdapter {
 
     private final PriceAlertCommandService priceAlertCommandService;
+    private final BinanceCredentialsCommandService binanceCredentialsCommandService;
     private final SymbolService symbolService;
+    //implement new service
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
@@ -27,6 +30,9 @@ public class SlashCommandListener extends ListenerAdapter {
         switch (commandName) {
             case SlashCommands.ALERT:
                 priceAlertCommandService.processCommand(event);
+                break;
+            case SlashCommands.BINANCE_CREDENTIALS:
+                binanceCredentialsCommandService.processCommand(event);
                 break;
             default:
                 break;
