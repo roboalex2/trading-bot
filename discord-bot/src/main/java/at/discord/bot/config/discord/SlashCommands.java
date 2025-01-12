@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SlashCommands {
     public static final String ALERT = "alert";
-    public static final String BINANCE_CREDENTIALS = "binance_credentials";
-    public static final String PLACE_MARKET_ORDER = "placemarketorder";
+    public static final String BINANCE_KEY = "binance-key";
+    public static final String Order_Market = "order-market";
     public static final String ORDER_LIMIT = "order-limit";
 
 }

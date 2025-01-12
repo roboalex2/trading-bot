@@ -2,10 +2,10 @@ package at.discord.bot.listener;
 
 import at.discord.bot.config.discord.SlashCommands;
 import at.discord.bot.service.binance.SymbolService;
+import at.discord.bot.service.command.BinanceKeyCommandService;
 import at.discord.bot.service.command.OrderLimitCommandService;
 import at.discord.bot.service.command.PriceAlertCommandService;
-import at.discord.bot.service.command.BinanceCredentialsCommandService;
-import at.discord.bot.service.command.PlaceMarketOrderCommandService;
+import at.discord.bot.service.command.OrderMarketCommandService;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 public class SlashCommandListener extends ListenerAdapter {
 
     private final PriceAlertCommandService priceAlertCommandService;
-    private final BinanceCredentialsCommandService binanceCredentialsCommandService;
-    private final PlaceMarketOrderCommandService placeMarketOrderCommandService;
+    private final BinanceKeyCommandService binanceKeyCommandService;
+    private final OrderMarketCommandService orderMarketCommandService;
     private final SymbolService symbolService;
     private final OrderLimitCommandService orderLimitCommandService;
     //implement new service
@@ -35,11 +35,11 @@ public class SlashCommandListener extends ListenerAdapter {
             case SlashCommands.ALERT:
                 priceAlertCommandService.processCommand(event);
                 break;
-            case SlashCommands.BINANCE_CREDENTIALS:
-                binanceCredentialsCommandService.processCommand(event);
+            case SlashCommands.BINANCE_KEY:
+                binanceKeyCommandService.processCommand(event);
                 break;
-            case SlashCommands.PLACE_MARKET_ORDER:
-                placeMarketOrderCommandService.processCommand(event);
+            case SlashCommands.Order_Market:
+                orderMarketCommandService.processCommand(event);
                 break;
             case SlashCommands.ORDER_LIMIT:
                 orderLimitCommandService.processCommand(event);

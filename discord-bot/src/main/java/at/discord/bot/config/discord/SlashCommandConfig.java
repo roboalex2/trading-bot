@@ -23,7 +23,7 @@ public class SlashCommandConfig {
 
     private final JDA jdaInstance;
     private final List<ListenerAdapter> eventListeners;
-
+    public static final String BINANCE_KEY_COMMAND = "binance-key";
     @EventListener(ApplicationReadyEvent.class)
     public void configureRuntime() {
         jdaInstance.addEventListener(eventListeners.toArray());
@@ -49,27 +49,18 @@ public class SlashCommandConfig {
                                         ),
                                 new SubcommandData("list", "List currently present price alerts")
                         ),
-                Commands.slash(SlashCommands.BINANCE_CREDENTIALS, "Manage Binance API credentials")
+                Commands.slash(BINANCE_KEY_COMMAND, "Manage your Binance API key")
                         .setGuildOnly(true)
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
                         .addSubcommands(
-                                new SubcommandData("add", "Add a new Binance API key")
+                                new SubcommandData("set", "Set your Binance API key")
                                         .addOptions(
-                                                new OptionData(OptionType.STRING, "apiKey", "Your Binance API key")
-                                                        .setRequired(true),
-                                                new OptionData(OptionType.STRING, "apiSecret", "Your Binance API secret key")
-                                                        .setRequired(true),
-                                                new OptionData(OptionType.STRING, "label", "A label to identify your API key")
+                                                new OptionData(OptionType.STRING, "api-key", "The Binance API key to set")
                                                         .setRequired(true)
                                         ),
-                                new SubcommandData("delete", "Delete an existing Binance API key")
-                                        .addOptions(
-                                                new OptionData(OptionType.STRING, "label", "Label of the API key to delete")
-                                                        .setRequired(true)
-                                        ),
-                                new SubcommandData("list", "List all stored Binance API keys")
+                                new SubcommandData("clear", "Clear your Binance API key")
                         ),
-                Commands.slash(SlashCommands.PLACE_MARKET_ORDER, "Place a market order on Binance")
+                Commands.slash(SlashCommands.Order_Market, "Place a market order on Binance")
                         .setGuildOnly(true)
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
                         .addSubcommands(
