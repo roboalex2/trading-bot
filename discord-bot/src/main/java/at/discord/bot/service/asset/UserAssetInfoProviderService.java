@@ -46,6 +46,9 @@ public class UserAssetInfoProviderService {
         }
 
         BinanceContext userContext = binanceContextProviderService.getUserContext(userId);
+        if (userContext == null) {
+            throw new RuntimeException("You have no binance credentials provided. Please use the /binance key command to add them.");
+        }
         try {
             String assetResponse = userContext.getSpotClient().createWallet().getUserAsset(new HashMap<>(Map.of(
                     "timestamp", Instant.now().toEpochMilli(),
