@@ -1,16 +1,24 @@
 package at.discord.bot.service.command;
 
-import at.discord.bot.service.asset.AssetService;
+import at.discord.bot.config.discord.SlashCommands;
+import at.discord.bot.model.asset.UserAsset;
+import at.discord.bot.service.asset.UserAssetInfoProviderService;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
-public class AssetCommandService {
+public class AssetCommandService implements CommandProcessor {
 
-    private final AssetService assetService;
+    private final static String COMMAND_NAME = SlashCommands.ASSET;
 
+    private final UserAssetInfoProviderService userAssetInfoProviderService;
+
+    @Override
     public void processCommand(SlashCommandInteractionEvent event) {
         String subcommand = event.getSubcommandName();
         if (subcommand == null || event.getUser() == null || event.getGuild() == null) {
@@ -33,15 +41,24 @@ public class AssetCommandService {
     }
 
     private void listAssets(SlashCommandInteractionEvent event) {
-        String userId = event.getUser().getId();
-        String assetList = assetService.getUserAssets(userId);
+        Long userId = event.getUser().getIdLong();
+        List<UserAsset> assetList = userAssetInfoProviderService.getUserAssets(userId);
 
         if (assetList == null || assetList.isEmpty()) {
             event.getHook().sendMessage("No assets found or failed to fetch asset data.")
                     .queue();
         } else {
-            event.getHook().sendMessage("Your assets:\n```" + assetList + "```")
+            String assets = assetList.stream()
+                    .map(UserAsset::toString)
+                    .collect(Collectors.joining("\n"));
+
+            event.getHook().sendMessage("Your assets:\n```" + assets + "```")
                     .queue();
         }
+    }
+
+    @Override
+    public String getCommandName() {
+        return COMMAND_NAME;
     }
 }

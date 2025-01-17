@@ -1,5 +1,6 @@
 package at.discord.bot.service.command;
 
+import at.discord.bot.config.discord.SlashCommands;
 import at.discord.bot.service.order.PlaceMarketOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +14,13 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OrderMarketCommandService {
+public class OrderMarketCommandService implements CommandProcessor {
+
+    private final static String COMMAND_NAME = SlashCommands.ORDER_MARKET;
 
     private final PlaceMarketOrderService placeMarketOrderService;
 
+    @Override
     public void processCommand(SlashCommandInteractionEvent event) {
 
         // Retrieve the subcommand (buy or sell)
@@ -86,5 +90,10 @@ public class OrderMarketCommandService {
         // Send confirmation to Discord (immediately after passing to service)
         event.getHook().sendMessage(String.format("Market %s order for %s %s has been placed successfully!", action, quantity, symbol))
                 .queue();
+    }
+
+    @Override
+    public String getCommandName() {
+        return COMMAND_NAME;
     }
 }

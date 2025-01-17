@@ -88,6 +88,8 @@ public class SlashCommandConfig {
                                 new SubcommandData("create", "Create a limit order")
                                         .addOptions(
                                                 new OptionData(OptionType.STRING, "buy_or_sell", "Place a limit buy or sell order")
+                                                        .addChoice("buy", "buy")
+                                                        .addChoice("sell", "sell")
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "symbol", "The trading pair symbol (e.g., BTC/USDT)")
                                                         .setRequired(true),

@@ -8,7 +8,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "price_alert")
+@Table(name = "price_alerts")
 public class PriceAlertEntity {
     @Id
     @GeneratedValue(generator = "UUID")

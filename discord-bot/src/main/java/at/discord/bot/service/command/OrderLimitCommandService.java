@@ -1,6 +1,7 @@
 package at.discord.bot.service.command;
 
-import at.discord.bot.service.binance.SymbolService;
+import at.discord.bot.config.discord.SlashCommands;
+import at.discord.bot.service.binance.SymbolProviderService;
 import at.discord.bot.service.order.OrderLimitService;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -12,11 +13,14 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class OrderLimitCommandService {
+public class OrderLimitCommandService implements CommandProcessor {
 
-    private final SymbolService symbolService;
+    private final static String COMMAND_NAME = SlashCommands.ORDER_LIMIT;
+
+    private final SymbolProviderService symbolProviderService;
     private final OrderLimitService orderLimitService;
 
+    @Override
     public void processCommand(SlashCommandInteractionEvent event) {
 
         String subcommand = event.getSubcommandName();
@@ -59,7 +63,7 @@ public class OrderLimitCommandService {
                 .map(String::toUpperCase)
                 .orElse(null);
 
-        if (symbol == null || symbolService.getAllAvailableSymbols().stream().noneMatch(symbol::equalsIgnoreCase)) {
+        if (symbol == null || symbolProviderService.getAllAvailableSymbols().stream().noneMatch(symbol::equalsIgnoreCase)) {
             event.getHook().sendMessage(String.format(
                     "The symbol `%s` is not available.",
                     symbol
@@ -96,5 +100,10 @@ public class OrderLimitCommandService {
         // Pass validated data to OrderLimitService
         // TODO: Implement actual order creation logic in the OrderLimitService
         orderLimitService.createLimitOrder(buyOrSell, symbol, quantity, price);
+    }
+
+    @Override
+    public String getCommandName() {
+        return COMMAND_NAME;
     }
 }

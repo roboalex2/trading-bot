@@ -52,6 +52,16 @@ public class CredentialsDataAccessService {
         binanceCredentialsRepository.save(byUserId);
     }
 
+    @Transactional
+    public synchronized boolean clearCredentials(long userId) {
+        Optional<BinanceCredentialsEntity> byUserId = binanceCredentialsRepository.findByUserId(userId);
+        if (byUserId.isEmpty()) {
+            return false;
+        }
+        binanceCredentialsRepository.delete(byUserId.get());
+        return true;
+    }
+
     private void validateKeyFile(byte[] secretApiKey) {
         Ed25519PrivateKeyParameters key = null;
 
