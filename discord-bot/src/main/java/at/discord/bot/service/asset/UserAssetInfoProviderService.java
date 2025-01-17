@@ -6,7 +6,6 @@ import at.discord.bot.service.binance.SymbolPriceMonitorService;
 import at.discord.bot.service.binance.SymbolProviderService;
 import at.discord.bot.service.binance.credential.BinanceContextProviderService;
 import at.discord.bot.service.candle.BarSeriesHolderService;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.ta4j.core.BarSeries;
-import org.ta4j.core.BaseBar;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -38,8 +36,6 @@ public class UserAssetInfoProviderService {
     private final BarSeriesHolderService barSeriesHolderService;
     private final ObjectMapper objectMapper;
 
-
-
     public List<UserAsset> getUserAssets(Long userId) {
         if (userId == null) {
             return List.of();
@@ -47,7 +43,7 @@ public class UserAssetInfoProviderService {
 
         BinanceContext userContext = binanceContextProviderService.getUserContext(userId);
         if (userContext == null) {
-            throw new RuntimeException("You have no binance credentials provided. Please use the /binance key command to add them.");
+            throw new RuntimeException("You have no binance credentials provided. Please use the '/binance-key set' command to add them.");
         }
         try {
             String assetResponse = userContext.getSpotClient().createWallet().getUserAsset(new HashMap<>(Map.of(
