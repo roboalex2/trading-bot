@@ -6,9 +6,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.commands.build.*;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
@@ -20,7 +18,6 @@ import java.util.List;
 @Profile("!test")
 @RequiredArgsConstructor
 public class SlashCommandConfig {
-
 
     private final JDA jdaInstance;
     private final List<ListenerAdapter> eventListeners;

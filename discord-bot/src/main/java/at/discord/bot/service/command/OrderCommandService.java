@@ -73,8 +73,8 @@ public class OrderCommandService implements CommandProcessor {
         }
 
         String source = "MANUAL";
-        orderService.placeLimitOrder(event.getUser().getIdLong(), type, symbol, quantity.toString(), price.toString(), source);
-        event.getHook().sendMessage("Limit order placed successfully.")
+        Long orderId = orderService.placeLimitOrder(event.getUser().getIdLong(), type, symbol, quantity.toString(), price.toString(), source);
+        event.getHook().sendMessage(String.format("Limit `%d` order placed successfully.", orderId))
             .queue();
     }
 
@@ -88,8 +88,8 @@ public class OrderCommandService implements CommandProcessor {
         }
 
         String source = "MANUAL"; // Source is set to MANUAL
-        orderService.placeMarketOrder(event.getUser().getIdLong(), type, symbol, quantity.toString(), source);
-        event.getHook().sendMessage("Market order placed successfully.")
+        Long orderId = orderService.placeMarketOrder(event.getUser().getIdLong(), type, symbol, quantity.toString(), source);
+        event.getHook().sendMessage(String.format("Market `%d` order placed successfully.", orderId))
             .queue();
     }
 
