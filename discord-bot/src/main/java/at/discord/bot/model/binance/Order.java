@@ -35,5 +35,9 @@ public class Order {
     private Boolean priceProtect;          // Price protection flag
     private String priceMatch;             // Price match mode
     private String selfTradePreventionMode; // Self-trading prevention mode
-    private String source;
+    private BigDecimal commissionAmount;
+    private String commissionAsset;
+
+    private String source;                 // Source of the order
+    private Long discordUserId;            // The owner of the order.
 }

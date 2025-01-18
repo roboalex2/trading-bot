@@ -133,7 +133,7 @@ public class OrderService {
         }
 
         // Load the order entity from the database
-        OrderEntity orderEntity = orderRepository.findById(orderId.toString())
+        OrderEntity orderEntity = orderRepository.findByOrderId(orderId)
             .orElseThrow(() -> new RuntimeException("Order with ID " + orderId + " not found in the database. The bot can only cancel what it created."));
 
         String symbol = orderEntity.getSymbol();

@@ -2,7 +2,9 @@ package at.discord.bot.service.command;
 
 import at.discord.bot.config.discord.SlashCommands;
 import at.discord.bot.model.binance.BinanceCredentials;
+import at.discord.bot.service.binance.credential.BinanceContextProviderService;
 import at.discord.bot.service.binance.credential.CredentialsDataAccessService;
+import at.discord.bot.service.binance.order.OrderMonitorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -23,6 +25,8 @@ public class BinanceKeyCommandService implements CommandProcessor {
     private final static String COMMAND_NAME = SlashCommands.BINANCE_KEY;
 
     private final CredentialsDataAccessService credentialsDataAccessService;
+    private final BinanceContextProviderService binanceContextProviderService;
+    private final OrderMonitorService orderMonitorService;
 
     @Override
     public void processCommand(SlashCommandInteractionEvent event) {
@@ -85,6 +89,7 @@ public class BinanceKeyCommandService implements CommandProcessor {
         credentialsDataAccessService.setCredentials(credentials);
         event.getHook().sendMessage("Your Binance API key has been set successfully. Try a command to check validity!")
                 .queue();
+        orderMonitorService.registerUserMonitor(binanceContextProviderService.getUserContext(credentials.getDiscordUserId()));
     }
 
     private void clearBinanceKey(SlashCommandInteractionEvent event) {

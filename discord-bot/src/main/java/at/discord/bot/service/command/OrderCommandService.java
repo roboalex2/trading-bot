@@ -5,7 +5,6 @@ import at.discord.bot.mapper.OrderEmbedMapper;
 import at.discord.bot.model.binance.Order;
 import at.discord.bot.service.binance.order.OrderService;
 import at.discord.bot.service.binance.symbol.SymbolProviderService;
-import at.discord.bot.service.order.PlaceMarketOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;

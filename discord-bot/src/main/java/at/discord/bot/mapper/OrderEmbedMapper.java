@@ -2,9 +2,12 @@ package at.discord.bot.mapper;
 
 
 import at.discord.bot.model.binance.Order;
+import at.discord.bot.service.user.UserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.User;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
@@ -15,9 +18,16 @@ import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class OrderEmbedMapper {
 
+    private final UserService userService;
+
     public MessageEmbed mapOrderToEmbed(Order order) {
+        return mapOrderToEmbed(order, false);
+    }
+
+    public MessageEmbed mapOrderToEmbed(Order order, boolean includeUser) {
         try {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
@@ -26,6 +36,16 @@ public class OrderEmbedMapper {
                 embedBuilder.setTitle("Order ID: " + order.getOrderId());
             }
             embedBuilder.setColor(order.getSide() != null && order.getSide().equalsIgnoreCase("BUY") ? Color.GREEN : Color.RED);
+
+            // User Information: Username and Profile Image
+            if (includeUser && order.getDiscordUserId() != null) {
+                User user = userService.getUser(order.getDiscordUserId());
+                if (user != null) {
+                    String username = user.getName();
+                    String avatarUrl = user.getEffectiveAvatarUrl();
+                    embedBuilder.setAuthor(username, null, avatarUrl);
+                }
+            }
 
             // Description: General Order Info
             StringBuilder description = new StringBuilder();
@@ -82,6 +102,13 @@ public class OrderEmbedMapper {
             // Original Quantity
             if (order.getOrigQty() != null) {
                 embedBuilder.addField("Original Quantity", order.getOrigQty().toPlainString(), true);
+            }
+
+            // Transaction Fees
+            if (order.getCommissionAmount() != null && order.getCommissionAsset() != null) {
+                embedBuilder.addField("Transaction Fees",
+                    order.getCommissionAmount().toPlainString() + " " + order.getCommissionAsset(),
+                    true);
             }
 
             // Bot-Managed
