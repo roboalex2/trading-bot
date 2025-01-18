@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.stereotype.Service;
 import at.discord.bot.service.binance.asset.UserAssetInfoProviderService;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,20 +23,20 @@ public class AssetCommandService implements CommandProcessor {
         String subcommand = event.getSubcommandName();
         if (subcommand == null || event.getUser() == null || event.getGuild() == null) {
             event.reply("Command, User, or Guild not found.")
-                    .setEphemeral(true)
-                    .queue();
+                .setEphemeral(true)
+                .queue();
             return;
         }
 
         event.deferReply()
-                .setEphemeral(true)
-                .queue();
+            .setEphemeral(true)
+            .queue();
 
         if ("list".equals(subcommand)) {
             listAssets(event);
         } else {
             event.getHook().sendMessage("Unknown subcommand.")
-                    .queue();
+                .queue();
         }
     }
 
@@ -45,14 +46,14 @@ public class AssetCommandService implements CommandProcessor {
 
         if (assetList == null || assetList.isEmpty()) {
             event.getHook().sendMessage("No assets found or failed to fetch asset data.")
-                    .queue();
+                .queue();
         } else {
             String assets = assetList.stream()
-                    .map(UserAsset::toString)
-                    .collect(Collectors.joining("\n"));
+                .map(UserAsset::toString)
+                .collect(Collectors.joining("\n"));
 
             event.getHook().sendMessage("Your assets:\n```" + assets + "```")
-                    .queue();
+                .queue();
         }
     }
 
