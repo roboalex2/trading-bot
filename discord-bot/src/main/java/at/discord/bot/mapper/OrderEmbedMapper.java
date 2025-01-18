@@ -22,54 +22,86 @@ public class OrderEmbedMapper {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
             // Title: Order ID
-            embedBuilder.setTitle("Order ID: " + order.getOrderId());
-            embedBuilder.setColor(order.getSide().equalsIgnoreCase("BUY") ? Color.GREEN : Color.RED);
+            if (order.getOrderId() != null) {
+                embedBuilder.setTitle("Order ID: " + order.getOrderId());
+            }
+            embedBuilder.setColor(order.getSide() != null && order.getSide().equalsIgnoreCase("BUY") ? Color.GREEN : Color.RED);
 
             // Description: General Order Info
-            embedBuilder.setDescription(String.format("Symbol: `%s`\nType: `%s`\nStatus: `%s`",
-                order.getSymbol(), order.getType(), order.getStatus()));
+            StringBuilder description = new StringBuilder();
+            if (order.getSymbol() != null) {
+                description.append("Symbol: `").append(order.getSymbol()).append("`\n");
+            }
+            if (order.getType() != null) {
+                description.append("Type: `").append(order.getType()).append("`\n");
+            }
+            if (order.getStatus() != null) {
+                description.append("Status: `").append(order.getStatus()).append("`");
+            }
+            if (description.length() > 0) {
+                embedBuilder.setDescription(description.toString());
+            }
 
-            // Only display executed quantity if it's relevant (not fully executed immediately)
-            if (order.getExecutedQty() != null && order.getExecutedQty().compareTo(order.getOrigQty()) < 0) {
+            // Executed Quantity
+            if (order.getExecutedQty() != null && order.getOrigQty() != null &&
+                order.getExecutedQty().compareTo(order.getOrigQty()) < 0) {
                 embedBuilder.addField("Executed Quantity", order.getExecutedQty().toPlainString(), true);
             }
 
-            // Only show the average price if it exists and is relevant
+            // Average Price
             if (order.getAvgPrice() != null && order.getAvgPrice().compareTo(BigDecimal.ZERO) > 0) {
                 embedBuilder.addField("Average Price", order.getAvgPrice().toPlainString(), true);
             }
 
-            // Price is relevant for:
-            // - Limit orders
-            // - Market orders that couldn't be filled immediately
-            if (("LIMIT".equalsIgnoreCase(order.getType()) || "MARKET".equalsIgnoreCase(order.getType()))
-                && order.getPrice() != null) {
+            // Price
+            if (order.getPrice() != null &&
+                ("LIMIT".equalsIgnoreCase(order.getType()) || "MARKET".equalsIgnoreCase(order.getType()))) {
                 embedBuilder.addField("Price", order.getPrice().toPlainString(), true);
             }
 
-            // Stop price is relevant for stop or trailing stop orders
+            // Stop Price
             if (order.getStopPrice() != null && order.getStopPrice().compareTo(BigDecimal.ZERO) > 0) {
                 embedBuilder.addField("Stop Price", order.getStopPrice().toPlainString(), true);
             }
 
-            // Callback rate is relevant for trailing stop orders
+            // Callback Rate
             if ("TRAILING_STOP_MARKET".equalsIgnoreCase(order.getType()) && order.getPriceRate() != null) {
                 embedBuilder.addField("Callback Rate", order.getPriceRate().toPlainString(), true);
             }
 
-            // Add additional fields where relevant
-            embedBuilder.addField("Side", order.getSide(), true);
-            embedBuilder.addField("Position Side", order.getPositionSide(), true);
-            embedBuilder.addField("Original Quantity", order.getOrigQty().toPlainString(), true);
-            embedBuilder.addField("Bot-Managed", Boolean.toString(isBotManaged(order)), true);
+            // Side
+            if (order.getSide() != null) {
+                embedBuilder.addField("Side", order.getSide(), true);
+            }
 
-            // Include timestamp for the order creation time
+            // Position Side
+            if (order.getPositionSide() != null) {
+                embedBuilder.addField("Position Side", order.getPositionSide(), true);
+            }
+
+            // Original Quantity
+            if (order.getOrigQty() != null) {
+                embedBuilder.addField("Original Quantity", order.getOrigQty().toPlainString(), true);
+            }
+
+            // Bot-Managed
+            embedBuilder.addField("Bot-Managed", Boolean.toString(isBotManaged(order)), false);
+
+            if (isBotManaged(order)) {
+                embedBuilder.addField("Creation Reason", order.getSource(), false);
+            }
+
+            // Timestamp (Order Creation Time)
             if (order.getTime() != null) {
                 String formattedTime = Instant.ofEpochMilli(order.getTime())
                     .atZone(ZoneId.of("Europe/Vienna"))
                     .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z"));
-                embedBuilder.setFooter(formattedTime);
+                embedBuilder.addField("Order Creation Time", formattedTime, false);
             }
+
+            embedBuilder.setFooter(Instant.now()
+                .atZone(ZoneId.of("Europe/Vienna"))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")));
 
             return embedBuilder.build();
         } catch (Exception exception) {

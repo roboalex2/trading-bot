@@ -17,8 +17,7 @@ import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -98,14 +97,43 @@ public class OrderCommandService implements CommandProcessor {
     private void handleListOrders(SlashCommandInteractionEvent event) {
         List<Order> openOrders = orderService.getOpenOrders(event.getUser().getIdLong());
 
+        List<MessageEmbed> currentEmbedBatch = new ArrayList<>();
+        List<Button> currentButtons = new ArrayList<>();
         for (Order order : openOrders) {
             MessageEmbed embed = orderEmbedMapper.mapOrderToEmbed(order);
-            Button cancelButton = Button.danger("cancel-order:" + order.getOrderId(), "Cancel Order");
-            WebhookMessageCreateAction<Message> messageWebhookMessageCreateAction = event.getHook().sendMessageEmbeds(embed);
-            if (order.getSource() == null || "UNKNOWN".equals(order.getSource())) {
-                messageWebhookMessageCreateAction.queue();
+            Button cancelButton = Button.danger("cancel-order:" + order.getOrderId(), "Cancel " + order.getOrderId());
+
+            // Add the embed to the current batch
+            currentEmbedBatch.add(embed);
+
+            // Add the button if the order source is known
+            if (order.getSource() != null && !"UNKNOWN".equals(order.getSource())) {
+                currentButtons.add(cancelButton);
+            }
+
+            // Check if adding the next embed or button would exceed limits
+            if (currentEmbedBatch.size() == 10 || currentButtons.size() == 5) {
+                // Send the current batch as a message
+                WebhookMessageCreateAction<Message> messageAction = event.getHook().sendMessageEmbeds(currentEmbedBatch);
+                if (!currentButtons.isEmpty()) {
+                    messageAction.addActionRow(currentButtons).queue();
+                } else {
+                    messageAction.queue();
+                }
+
+                // Clear the batches for the next set
+                currentEmbedBatch.clear();
+                currentButtons.clear();
+            }
+        }
+
+        // Send any remaining embeds/buttons after the loop
+        if (!currentEmbedBatch.isEmpty()) {
+            WebhookMessageCreateAction<Message> messageAction = event.getHook().sendMessageEmbeds(currentEmbedBatch);
+            if (!currentButtons.isEmpty()) {
+                messageAction.addActionRow(currentButtons).queue();
             } else {
-                messageWebhookMessageCreateAction.addActionRow(cancelButton).queue();
+                messageAction.queue();
             }
         }
     }
