@@ -2,11 +2,10 @@ package at.discord.bot.service.command;
 
 import at.discord.bot.config.discord.SlashCommands;
 import at.discord.bot.model.asset.UserAsset;
-import at.discord.bot.service.asset.UserAssetInfoProviderService;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.stereotype.Service;
-
+import at.discord.bot.service.binance.asset.UserAssetInfoProviderService;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +28,7 @@ public class AssetCommandService implements CommandProcessor {
         }
 
         event.deferReply()
-                .setEphemeral(true) // Make the response visible only to the user
+                .setEphemeral(true)
                 .queue();
 
         if ("list".equals(subcommand)) {

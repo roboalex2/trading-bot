@@ -3,7 +3,7 @@ package at.discord.bot.service.command;
 import at.discord.bot.config.discord.SlashCommands;
 import at.discord.bot.persistent.model.PriceAlertEntity;
 import at.discord.bot.service.alert.PriceAlertService;
-import at.discord.bot.service.binance.SymbolProviderService;
+import at.discord.bot.service.binance.symbol.SymbolProviderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

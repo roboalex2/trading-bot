@@ -1,6 +1,6 @@
 package at.discord.bot.listener;
 
-import at.discord.bot.service.binance.SymbolProviderService;
+import at.discord.bot.service.binance.symbol.SymbolProviderService;
 import at.discord.bot.service.command.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

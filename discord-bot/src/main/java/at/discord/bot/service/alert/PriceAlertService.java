@@ -2,7 +2,7 @@ package at.discord.bot.service.alert;
 
 import at.discord.bot.persistent.PriceAlertRepository;
 import at.discord.bot.persistent.model.PriceAlertEntity;
-import at.discord.bot.service.binance.SymbolPriceMonitorService;
+import at.discord.bot.service.binance.symbol.SymbolPriceMonitorService;
 import at.discord.bot.service.candle.BarSeriesHolderService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

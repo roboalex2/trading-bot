@@ -19,5 +19,5 @@ public class DiscordConfigProperties {
     @NotEmpty
     private String token;
     @NotNull
-    private Long alertChannel;
+    private Long fallbackChannel;
 }

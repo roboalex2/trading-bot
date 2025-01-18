@@ -1,4 +1,4 @@
-package at.discord.bot.service.binance;
+package at.discord.bot.service.binance.symbol;
 
 import at.discord.bot.mapper.CandlestickMapper;
 import at.discord.bot.service.candle.BarSeriesHolderService;

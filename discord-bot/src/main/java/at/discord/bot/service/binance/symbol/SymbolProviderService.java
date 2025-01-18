@@ -1,4 +1,4 @@
-package at.discord.bot.service.binance;
+package at.discord.bot.service.binance.symbol;
 
 import at.discord.bot.config.binance.BinanceConfigProperties;
 import at.discord.bot.persistent.PriceAlertRepository;

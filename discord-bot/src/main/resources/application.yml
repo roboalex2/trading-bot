@@ -40,4 +40,4 @@ binance:
 
 discord:
   token: "MTMyNTk2NzMyNDA3OTE5NDEzMg.GmBjHk.IK8EKpq2i6sXT5up_OyEfaF5etTcaZifAZzfWo"
-  alert-channel: 1325967593739260007
+  fallback-channel: 1325967593739260007

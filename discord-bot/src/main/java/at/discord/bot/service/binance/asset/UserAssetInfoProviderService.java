@@ -1,9 +1,9 @@
-package at.discord.bot.service.asset;
+package at.discord.bot.service.binance.asset;
 
 import at.discord.bot.model.asset.UserAsset;
 import at.discord.bot.model.binance.BinanceContext;
-import at.discord.bot.service.binance.SymbolPriceMonitorService;
-import at.discord.bot.service.binance.SymbolProviderService;
+import at.discord.bot.service.binance.symbol.SymbolPriceMonitorService;
+import at.discord.bot.service.binance.symbol.SymbolProviderService;
 import at.discord.bot.service.binance.credential.BinanceContextProviderService;
 import at.discord.bot.service.candle.BarSeriesHolderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
