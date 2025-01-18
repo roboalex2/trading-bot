@@ -31,9 +31,9 @@ public class OrderService {
             throw new RuntimeException("Cannot load open orders for user " + userId + " as no Binance credentials are present.");
         }
 
-        String openOrdersResponse = userContext.getSpotClient().createTrade().getOpenOrders(Map.of(
+        String openOrdersResponse = userContext.getSpotClient().createTrade().getOpenOrders(new HashMap<>(Map.of(
             "timestamp", Instant.now().toEpochMilli()
-        ));
+        )));
 
         try {
             // Deserialize the Binance API response into a list of Order objects
