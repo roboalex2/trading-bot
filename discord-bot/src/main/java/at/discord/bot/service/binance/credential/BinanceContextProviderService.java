@@ -20,6 +20,7 @@ public class BinanceContextProviderService {
     private final CredentialsDataAccessService credentialsDataAccessService;
     private final BinanceConfigProperties binanceConfigProperties;
 
+    // TODO do not allways access database
     public BinanceContext getUserContext(long userId) {
         BinanceCredentials credentials = credentialsDataAccessService.getCredentials(userId);
         if (credentials == null) {

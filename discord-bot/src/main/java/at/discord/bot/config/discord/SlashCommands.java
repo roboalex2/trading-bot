@@ -10,4 +10,5 @@ public class SlashCommands {
     public static final String ORDER = "order";
     public static final String ASSET = "asset";
     public static final String SETTING = "setting";
+    public static final String STRATEGY = "strategy";
 }
