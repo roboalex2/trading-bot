@@ -94,7 +94,7 @@ public class AlexTradingStrategy implements BaseStrategy {
         // Simple SMA crossing logic
         // If shortSMA > longSMA => bullish => Buy if not in position
         if (!state.inPosition && shortValue > longValue) {
-            String quantity = "10000"; // Example
+            String quantity = "156524"; // Example
             try {
                 Long orderId = orderService.placeMarketOrder(
                         deploymentContext.getDiscordUserId(),
@@ -114,7 +114,7 @@ public class AlexTradingStrategy implements BaseStrategy {
         }
         // If shortSMA < longSMA => bearish => Sell if in position
         else if (state.inPosition && shortValue < longValue) {
-            String quantity = "10000";
+            String quantity = "156524";
             try {
                 Long orderId = orderService.placeMarketOrder(
                         deploymentContext.getDiscordUserId(),
