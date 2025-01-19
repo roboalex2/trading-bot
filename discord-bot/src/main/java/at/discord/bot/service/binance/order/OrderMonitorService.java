@@ -33,6 +33,7 @@ public class OrderMonitorService {
 
     private Map<Long, String> activeListenKeys = new HashMap<>();
     private Map<Long, Integer> openWebSockets = new HashMap<>();
+
     @EventListener(ApplicationReadyEvent.class)
     private void openWebsocketStream() {
         userService.getActiveUsers().stream()

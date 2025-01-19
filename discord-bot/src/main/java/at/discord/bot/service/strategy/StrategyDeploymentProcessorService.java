@@ -10,6 +10,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -26,8 +28,17 @@ public class StrategyDeploymentProcessorService {
     private final List<BaseStrategy> baseStrategyList;
     private final BinanceContextProviderService binanceContextProviderService;
     private final ObjectMapper objectMapper;
+    private final StrategyDeploymentRepository strategyDeploymentRepository;
 
     private Map<Long, StrategyDeploymentContext> strategyDeploymentContexts = new ConcurrentHashMap<>();
+
+    @EventListener(ApplicationReadyEvent.class)
+    private void onApplicationReadyEvent() {
+        strategyDeploymentRepository.findAll()
+                // TODO only resume active deployments not paused ones
+                .forEach(this::makeActiveDeployment);
+    }
+
 
     public void makeActiveDeployment(StrategyDeploymentEntity strategyDeploymentEntity) {
         try {
