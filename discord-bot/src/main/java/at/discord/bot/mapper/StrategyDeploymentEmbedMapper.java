@@ -64,7 +64,7 @@ public class StrategyDeploymentEmbedMapper {
             }
 
             // Footer: Timestamp
-            embedBuilder.setFooter("Generated on",
+            embedBuilder.setFooter("Generated on " +
                     Instant.now().atZone(ZoneId.of("Europe/Vienna"))
                             .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")));
 
