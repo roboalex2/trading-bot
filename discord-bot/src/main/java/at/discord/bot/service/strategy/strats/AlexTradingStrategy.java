@@ -1,4 +1,4 @@
-package at.discord.bot.service.strategy;
+package at.discord.bot.service.strategy.strats;
 
 import at.discord.bot.model.binance.Order;
 import at.discord.bot.model.strategy.StrategyDeploymentContext;
@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.ta4j.core.BarSeries;
-import org.ta4j.core.indicators.RSIIndicator;
+import org.ta4j.core.indicators.SMAIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 
 import java.time.Instant;
@@ -19,16 +19,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class JoniTradingStrategy implements BaseStrategy {
+public class AlexTradingStrategy implements BaseStrategy {
 
     private static final Map<String, String> DEFAULT_SETTINGS = Map.of(
-            "SYMBOL", "BTCUSDT"
+            "SYMBOL", "PEPEFDUSD",
+            "SHORT_SMA_LENGTH", "50",
+            "LONG_SMA_LENGTH", "150",
+            "MIN_ORDER_INTERVAL_SECONDS", "30",
+            "TRADE_QUANTITY", "156524"  // Example default quantity
     );
-
-    private static final int RSI_LENGTH = 14; // RSI look-back period
-    private static final double RSI_OVERBOUGHT = 70.0;
-    private static final double RSI_OVERSOLD = 30.0;
-    private static final long MIN_ORDER_INTERVAL_SECONDS = 30; // Minimum time gap between orders
 
     private final BarSeriesHolderService barSeriesHolderService;
     private final SymbolPriceMonitorService symbolPriceMonitorService;
@@ -41,48 +40,65 @@ public class JoniTradingStrategy implements BaseStrategy {
 
     private final Map<Long, DeploymentState> stateMap = new ConcurrentHashMap<>();
 
+
     @Override
     public Map<String, String> getDefaultSetting() {
-        return DEFAULT_SETTINGS;
+        return new ConcurrentHashMap<>(DEFAULT_SETTINGS);
     }
 
     @Override
     public String getStrategyName() {
-        return "RSI_STRATEGY";
+        return "SIMPLE_SMA";
     }
-
     @Override
     public void update(StrategyDeploymentContext deploymentContext) {
         long deploymentId = deploymentContext.getDeploymentId();
+
+        // Obtain or create a DeploymentState for this particular deployment
         DeploymentState state = stateMap.computeIfAbsent(deploymentId, id -> new DeploymentState());
 
-        String symbol = deploymentContext.getSettings().get("SYMBOL");
+        // Fetch the strategy settings from the deployment context
+        Map<String, String> settings = deploymentContext.getSettings();
+
+        // Parse each setting
+        String symbol = settings.get("SYMBOL");
+        int shortSmaLength = Integer.parseInt(settings.get("SHORT_SMA_LENGTH"));
+        int longSmaLength = Integer.parseInt(settings.get("LONG_SMA_LENGTH"));
+        long minOrderIntervalSeconds = Long.parseLong(settings.get("MIN_ORDER_INTERVAL_SECONDS"));
+        String quantity = settings.get("TRADE_QUANTITY"); // e.g., "156524"
+
+        // Get the BarSeries for the symbol
         BarSeries barSeries = barSeriesHolderService.getBarSeries(symbol);
         if (barSeries == null || barSeries.isEmpty()) {
+            // If no data, ensure we monitor the symbol; no further logic
             symbolPriceMonitorService.registerSymbol(symbol);
             return;
         }
 
-        if (barSeries.getBarCount() < RSI_LENGTH) {
-            return; // Not enough data to calculate RSI
+        // Need enough bars to compute the long SMA
+        if (barSeries.getBarCount() < longSmaLength) {
+            return;
         }
 
+        // Check minimal gap between orders
         Instant now = Instant.now();
-        if (now.minusSeconds(MIN_ORDER_INTERVAL_SECONDS).isBefore(state.lastOrderTime)) {
-            return; // Too soon to place another order
+        if (now.minusSeconds(minOrderIntervalSeconds).isBefore(state.lastOrderTime)) {
+            // Too soon since last order - skip
+            return;
         }
 
-        // Compute RSI
+        // --- Compute Indicators ---
         ClosePriceIndicator closePrice = new ClosePriceIndicator(barSeries);
-        RSIIndicator rsi = new RSIIndicator(closePrice, RSI_LENGTH);
+        SMAIndicator shortSma = new SMAIndicator(closePrice, shortSmaLength);
+        SMAIndicator longSma = new SMAIndicator(closePrice, longSmaLength);
 
         int endIndex = barSeries.getEndIndex();
-        double rsiValue = rsi.getValue(endIndex).doubleValue();
+        double shortValue = shortSma.getValue(endIndex).doubleValue();
+        double longValue = longSma.getValue(endIndex).doubleValue();
 
-        // Strategy logic: Buy/Sell based on RSI thresholds
-        if (!state.inPosition && rsiValue < RSI_OVERSOLD) {
-            // Oversold: Place a BUY order
-            String quantity = "0.001"; // Example quantity
+        // --- Simple SMA crossing logic ---
+        // If shortSMA > longSMA => bullish => Buy if not in position
+        if (!state.inPosition && shortValue > longValue) {
             try {
                 Long orderId = orderService.placeMarketOrder(
                         deploymentContext.getDiscordUserId(),
@@ -92,16 +108,16 @@ public class JoniTradingStrategy implements BaseStrategy {
                         getStrategyName() + "-" + deploymentId
                 );
                 if (orderId != null) {
-                    log.info("Deployment {}: Placed BUY order (id={}) with RSI {}", deploymentId, orderId, rsiValue);
+                    log.info("Deployment {}: Placed BUY order (id={})", deploymentId, orderId);
                     state.inPosition = true;
                     state.lastOrderTime = now;
                 }
             } catch (Exception e) {
                 log.error("Deployment {}: Error placing BUY order", deploymentId, e);
             }
-        } else if (state.inPosition && rsiValue > RSI_OVERBOUGHT) {
-            // Overbought: Place a SELL order
-            String quantity = "0.001"; // Example quantity
+        }
+        // If shortSMA < longSMA => bearish => Sell if in position
+        else if (state.inPosition && shortValue < longValue) {
             try {
                 Long orderId = orderService.placeMarketOrder(
                         deploymentContext.getDiscordUserId(),
@@ -111,7 +127,7 @@ public class JoniTradingStrategy implements BaseStrategy {
                         getStrategyName() + "-" + deploymentId
                 );
                 if (orderId != null) {
-                    log.info("Deployment {}: Placed SELL order (id={}) with RSI {}", deploymentId, orderId, rsiValue);
+                    log.info("Deployment {}: Placed SELL order (id={})", deploymentId, orderId);
                     state.inPosition = false;
                     state.lastOrderTime = now;
                 }

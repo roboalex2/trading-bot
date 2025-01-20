@@ -4,6 +4,7 @@ import at.discord.bot.model.binance.BinanceContext;
 import at.discord.bot.persistent.StrategyDeploymentRepository;
 import at.discord.bot.persistent.model.StrategyDeploymentEntity;
 import at.discord.bot.service.binance.credential.BinanceContextProviderService;
+import at.discord.bot.service.strategy.strats.BaseStrategy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

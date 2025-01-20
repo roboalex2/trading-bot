@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Slf4j
 @Component
 public class OrderMapper {
@@ -18,7 +21,7 @@ public class OrderMapper {
                 .symbol(jsonObject.optString("s")) // Maps "s" to symbol
                 .status(jsonObject.optString("X")) // Maps "X" to status
                 .type(jsonObject.optString("o")) // Maps "o" to type
-                .price(jsonObject.has("p") ? jsonObject.getBigDecimal("p") : null) // Maps "p" to price
+                .price(getExecutionPrice(jsonObject)) // Maps "p" to price
                 .origQty(jsonObject.has("q") ? jsonObject.getBigDecimal("q") : null) // Maps "q" to origQty
                 .executedQty(jsonObject.has("z") ? jsonObject.getBigDecimal("z") : null) // Maps "z" to executedQty
                 .stopPrice(jsonObject.has("P") ? jsonObject.getBigDecimal("P") : null) // Maps "P" to stopPrice
@@ -40,5 +43,15 @@ public class OrderMapper {
             return jsonObject.getString("N");
         }
         return null;
+    }
+
+    private BigDecimal getExecutionPrice(JSONObject jsonObject) {
+        if (!jsonObject.has("p") || jsonObject.getBigDecimal("p").doubleValue() == 0d) {
+            if (jsonObject.has("Z") && jsonObject.has("z")) {
+                return jsonObject.getBigDecimal("Z").divide(jsonObject.getBigDecimal("z"), RoundingMode.HALF_UP);
+            }
+            return jsonObject.has("P") && jsonObject.getBigDecimal("P").doubleValue() != 0d ? jsonObject.getBigDecimal("P") : new BigDecimal(-1);
+        }
+        return jsonObject.getBigDecimal("p");
     }
 }

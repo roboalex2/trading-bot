@@ -4,6 +4,7 @@ import at.discord.bot.model.binance.Order;
 import at.discord.bot.model.strategy.StrategyDeploymentContext;
 import at.discord.bot.persistent.StrategyDeploymentRepository;
 import at.discord.bot.persistent.model.StrategyDeploymentEntity;
+import at.discord.bot.service.strategy.strats.BaseStrategy;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

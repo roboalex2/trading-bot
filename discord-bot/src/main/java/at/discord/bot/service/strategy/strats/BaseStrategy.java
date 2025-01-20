@@ -1,6 +1,5 @@
-package at.discord.bot.service.strategy;
+package at.discord.bot.service.strategy.strats;
 
-import at.discord.bot.model.binance.BinanceContext;
 import at.discord.bot.model.binance.Order;
 import at.discord.bot.model.strategy.StrategyDeploymentContext;
 
