@@ -50,6 +50,7 @@ public class AlexTradingStrategy implements BaseStrategy {
     public String getStrategyName() {
         return "SIMPLE_SMA";
     }
+
     @Override
     public void update(StrategyDeploymentContext deploymentContext) {
         long deploymentId = deploymentContext.getDeploymentId();
@@ -99,40 +100,32 @@ public class AlexTradingStrategy implements BaseStrategy {
         // --- Simple SMA crossing logic ---
         // If shortSMA > longSMA => bullish => Buy if not in position
         if (!state.inPosition && shortValue > longValue) {
-            try {
-                Long orderId = orderService.placeMarketOrder(
-                        deploymentContext.getDiscordUserId(),
-                        "BUY",
-                        symbol,
-                        quantity,
-                        getStrategyName() + "-" + deploymentId
-                );
-                if (orderId != null) {
-                    log.info("Deployment {}: Placed BUY order (id={})", deploymentId, orderId);
-                    state.inPosition = true;
-                    state.lastOrderTime = now;
-                }
-            } catch (Exception e) {
-                log.error("Deployment {}: Error placing BUY order", deploymentId, e);
+            Long orderId = orderService.placeMarketOrder(
+                    deploymentContext.getDiscordUserId(),
+                    "BUY",
+                    symbol,
+                    quantity,
+                    getStrategyName() + "-" + deploymentId
+            );
+            if (orderId != null) {
+                log.info("Deployment {}: Placed BUY order (id={})", deploymentId, orderId);
+                state.inPosition = true;
+                state.lastOrderTime = now;
             }
         }
         // If shortSMA < longSMA => bearish => Sell if in position
         else if (state.inPosition && shortValue < longValue) {
-            try {
-                Long orderId = orderService.placeMarketOrder(
-                        deploymentContext.getDiscordUserId(),
-                        "SELL",
-                        symbol,
-                        quantity,
-                        getStrategyName() + "-" + deploymentId
-                );
-                if (orderId != null) {
-                    log.info("Deployment {}: Placed SELL order (id={})", deploymentId, orderId);
-                    state.inPosition = false;
-                    state.lastOrderTime = now;
-                }
-            } catch (Exception e) {
-                log.error("Deployment {}: Error placing SELL order", deploymentId, e);
+            Long orderId = orderService.placeMarketOrder(
+                    deploymentContext.getDiscordUserId(),
+                    "SELL",
+                    symbol,
+                    quantity,
+                    getStrategyName() + "-" + deploymentId
+            );
+            if (orderId != null) {
+                log.info("Deployment {}: Placed SELL order (id={})", deploymentId, orderId);
+                state.inPosition = false;
+                state.lastOrderTime = now;
             }
         }
     }
