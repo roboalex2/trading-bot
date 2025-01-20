@@ -1,4 +1,4 @@
-package at.discord.bot.service.channel;
+package at.discord.bot.service.messaging;
 
 import at.discord.bot.config.discord.DiscordConfigProperties;
 import at.discord.bot.persistent.GlobalSettingsRepository;

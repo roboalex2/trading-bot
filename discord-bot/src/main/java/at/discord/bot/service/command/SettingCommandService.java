@@ -1,7 +1,7 @@
 package at.discord.bot.service.command;
 
 import at.discord.bot.config.discord.SlashCommands;
-import at.discord.bot.service.channel.MessageChannelService;
+import at.discord.bot.service.messaging.MessageChannelService;
 import at.discord.bot.service.strategy.StrategySettingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

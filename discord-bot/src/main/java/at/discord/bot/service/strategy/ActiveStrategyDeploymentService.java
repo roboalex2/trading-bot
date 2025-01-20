@@ -1,9 +1,11 @@
 package at.discord.bot.service.strategy;
 
+import at.discord.bot.mapper.StrategyDeploymentEmbedMapper;
 import at.discord.bot.model.binance.Order;
 import at.discord.bot.model.strategy.StrategyDeploymentContext;
 import at.discord.bot.persistent.StrategyDeploymentRepository;
 import at.discord.bot.persistent.model.StrategyDeploymentEntity;
+import at.discord.bot.service.messaging.LogMessagingService;
 import at.discord.bot.service.strategy.strats.BaseStrategy;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,9 +24,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @RequiredArgsConstructor
 public class ActiveStrategyDeploymentService {
+    private final LogMessagingService logMessagingService;
     private final List<BaseStrategy> baseStrategyList;
     private final ObjectMapper objectMapper;
     private final StrategyDeploymentRepository strategyDeploymentRepository;
+    private final StrategyDeploymentEmbedMapper strategyDeploymentEmbedMapper;
 
     private Map<Long, StrategyDeploymentContext> strategyDeploymentContexts = new ConcurrentHashMap<>();
 
@@ -94,7 +98,8 @@ public class ActiveStrategyDeploymentService {
                         strategy.orderEvent(fullContext, order);
                     } catch (Exception exception) {
                         log.error("Failed to order event strategy deployment entity={}", strategyDeploymentContext, exception);
-                        // TODO Log in discord?
+                        sendDeploymentExceptionMessage(strategyDeploymentContext, exception);
+                        makeInactiveDeployment(strategyDeploymentContext.getDeploymentId());
                     }
                 });
     }
@@ -115,8 +120,14 @@ public class ActiveStrategyDeploymentService {
                         strategy.update(fullContext);
                     } catch (Exception exception) {
                         log.error("Failed to update strategy deployment entity={}", strategyDeploymentContext, exception);
-                        // TODO Log in discord?
+                        sendDeploymentExceptionMessage(strategyDeploymentContext, exception);
+                        makeInactiveDeployment(strategyDeploymentContext.getDeploymentId());
                     }
                 });
+    }
+
+    public void sendDeploymentExceptionMessage(StrategyDeploymentContext strategyDeploymentContext, Exception exception) {
+        String message = "There was a error with this deployment. This deployment is now set to `PAUSED`. Reason: " + exception.getMessage();
+        logMessagingService.sendPublicLogMessage(strategyDeploymentEmbedMapper.mapDeploymentToEmbed(strategyDeploymentContext, message));
     }
 }

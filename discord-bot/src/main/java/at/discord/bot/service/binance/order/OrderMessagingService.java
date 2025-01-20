@@ -2,7 +2,7 @@ package at.discord.bot.service.binance.order;
 
 import at.discord.bot.mapper.OrderEmbedMapper;
 import at.discord.bot.model.binance.Order;
-import at.discord.bot.service.channel.MessageChannelService;
+import at.discord.bot.service.messaging.MessageChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;

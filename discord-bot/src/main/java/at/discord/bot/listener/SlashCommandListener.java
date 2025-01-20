@@ -47,6 +47,7 @@ public class SlashCommandListener extends ListenerAdapter {
     @Override
     public void onCommandAutoCompleteInteraction(CommandAutoCompleteInteractionEvent event) {
         String optionName = event.getFocusedOption().getName().toLowerCase();
+        String value = event.getFocusedOption().getValue();
         Guild guild = event.getGuild();
         if (guild == null) {
             return;
@@ -56,6 +57,7 @@ public class SlashCommandListener extends ListenerAdapter {
         switch (optionName) {
             case "symbol" -> {
                 event.replyChoices(symbolProviderService.getAllAvailableSymbols().stream()
+                                .filter(el -> el.startsWith(value))
                                 .limit(25)
                                 .map(el -> new Command.Choice(el, el))
                                 .collect(Collectors.toList()))
@@ -66,6 +68,7 @@ public class SlashCommandListener extends ListenerAdapter {
                 List<StrategyDeploymentEntity> allByDiscordUserId = strategyDeploymentRepository.findAllByDiscordUserId(event.getUser().getIdLong());
 
                 event.replyChoices(allByDiscordUserId.stream()
+                                .filter(el -> (el.getDeploymentId()+"").startsWith(value))
                                 .limit(25)
                                 .map(el -> new Command.Choice("" + el.getDeploymentId(), el.getDeploymentId()))
                                 .collect(Collectors.toList()))
@@ -85,6 +88,7 @@ public class SlashCommandListener extends ListenerAdapter {
                 Map<String, String> defaultSetting = strategyService.getStrategy(stratName).getDefaultSetting();
 
                 event.replyChoices(defaultSetting.keySet().stream()
+                                .filter(el -> el.startsWith(value))
                                 .limit(25)
                                 .map(el -> new Command.Choice(el, el))
                                 .collect(Collectors.toList()))
@@ -108,8 +112,12 @@ public class SlashCommandListener extends ListenerAdapter {
                         .orElse(null);
                 Map<String, String> defaultSetting = strategyService.getStrategy(stratName).getDefaultSetting();
 
-                event.replyChoices(new Command.Choice(defaultSetting.get(settingKey), defaultSetting.get(settingKey)))
-                        .queue();
+                if (defaultSetting.get(settingKey).startsWith(value)) {
+                    event.replyChoices(new Command.Choice(defaultSetting.get(settingKey), defaultSetting.get(settingKey)))
+                            .queue();
+                    return;
+                }
+                event.replyChoices(List.of()).queue();
                 return;
             }
         }
