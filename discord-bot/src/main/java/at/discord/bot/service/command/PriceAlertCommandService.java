@@ -1,9 +1,9 @@
 package at.discord.bot.service.command;
 
-import at.discord.bot.persistent.PriceAlertRepository;
+import at.discord.bot.config.discord.SlashCommands;
 import at.discord.bot.persistent.model.PriceAlertEntity;
 import at.discord.bot.service.alert.PriceAlertService;
-import at.discord.bot.service.binance.SymbolService;
+import at.discord.bot.service.binance.symbol.SymbolProviderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -17,11 +17,14 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PriceAlertCommandService {
+public class PriceAlertCommandService implements CommandProcessor {
 
-    private final SymbolService symbolService;
+    private final static String COMMAND_NAME = SlashCommands.ALERT;
+
+    private final SymbolProviderService symbolProviderService;
     private final PriceAlertService priceAlertService;
 
+    @Override
     public void processCommand(SlashCommandInteractionEvent event) {
 
         String subcommand = event.getSubcommandName();
@@ -55,7 +58,7 @@ public class PriceAlertCommandService {
             .map(String::toUpperCase)
             .orElse(null);
 
-        if (symbol == null || symbolService.getAllAvailableSymbols().stream().noneMatch(symbol::equalsIgnoreCase)) {
+        if (symbol == null || symbolProviderService.getAllAvailableSymbols().stream().noneMatch(symbol::equalsIgnoreCase)) {
             event.getHook().sendMessage(String.format(
                 "The symbol `%s` is not available at binance.",
                 symbol
@@ -155,5 +158,10 @@ public class PriceAlertCommandService {
         stringBuilder.append("```");
 
         event.getHook().sendMessage(stringBuilder.toString()).queue();
+    }
+
+    @Override
+    public String getCommandName() {
+        return COMMAND_NAME;
     }
 }

@@ -1,4 +1,4 @@
-package at.discord.bot.service.binance;
+package at.discord.bot.service.binance.symbol;
 
 import at.discord.bot.mapper.CandlestickMapper;
 import at.discord.bot.service.candle.BarSeriesHolderService;
@@ -15,7 +15,6 @@ import org.ta4j.core.BaseBar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -25,13 +24,13 @@ public class SymbolPriceMonitorService {
     private final CandlestickMapper candlestickMapper;
     private final WebSocketStreamClient webSocketStreamClient;
     private final BarSeriesHolderService barSeriesHolderService;
-    private final SymbolService symbolService;
+    private final SymbolProviderService symbolProviderService;
 
     private Map<String, Integer> openStreams = new HashMap<>();
 
     @EventListener(ApplicationReadyEvent.class)
     private void openWebsocketStream() {
-        symbolService.getMonitoredSymbols().forEach(this::registerSymbol);
+        symbolProviderService.getMonitoredSymbols().forEach(this::registerSymbol);
     }
 
     public synchronized void registerSymbol(String symbol) {

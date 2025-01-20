@@ -1,14 +1,14 @@
 package at.discord.bot.config.discord;
 
+import at.discord.bot.service.strategy.StrategyService;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.commands.build.*;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
@@ -21,9 +21,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SlashCommandConfig {
 
-
     private final JDA jdaInstance;
     private final List<ListenerAdapter> eventListeners;
+    private final StrategyService strategyService;
+
     @EventListener(ApplicationReadyEvent.class)
     public void configureRuntime() {
         jdaInstance.addEventListener(eventListeners.toArray());
@@ -62,43 +63,36 @@ public class SlashCommandConfig {
                                         ),
                                 new SubcommandData("clear", "Clear your Binance API key")
                         ),
-                Commands.slash(SlashCommands.ORDER_MARKET, "Place a market order on Binance")
+                Commands.slash(SlashCommands.ORDER, "Place a market order on Binance")
                         .setGuildOnly(true)
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
                         .addSubcommands(
-                                new SubcommandData("buy", "Place a market buy order")
+                                new SubcommandData("limit", "Place a limit order")
                                         .addOptions(
-                                                new OptionData(OptionType.STRING, "symbol", "The trading pair symbol (e.g., BTC/USDT)")
-                                                        .setRequired(true),
-                                                new OptionData(OptionType.STRING, "quantity", "The quantity of the asset to buy")
-                                                        .setRequired(true)
-                                        ),
-                                new SubcommandData("sell", "Place a market sell order")
-                                        .addOptions(
-                                                new OptionData(OptionType.STRING, "symbol", "The trading pair symbol (e.g., BTC/USDT)")
-                                                        .setRequired(true),
-                                                new OptionData(OptionType.STRING, "quantity", "The quantity of the asset to sell")
-                                                        .setRequired(true)
-                                        )
-                        ),
-                Commands.slash(SlashCommands.ORDER_LIMIT, "Manage limit orders on Binance")
-                        .setGuildOnly(true)
-                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
-                        .addSubcommands(
-                                new SubcommandData("create", "Create a limit order")
-                                        .addOptions(
-                                                new OptionData(OptionType.STRING, "buy_or_sell", "Place a limit buy or sell order")
+                                                new OptionData(OptionType.STRING, "type", "The order direction BUY or SELL")
+                                                        .addChoice("buy", "buy")
+                                                        .addChoice("sell", "sell")
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "symbol", "The trading pair symbol (e.g., BTC/USDT)")
                                                         .setRequired(true),
-                                                new OptionData(OptionType.STRING, "quantity", "The quantity of the asset to buy or sell")
+                                                new OptionData(OptionType.STRING, "quantity", "The quantity of the asset to buy/sell")
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "price", "The price at which to place the order")
                                                         .setRequired(true)
                                         ),
-                                new SubcommandData("list", "List all open limit orders")
-                                        .setDescription("Shows all open limit orders that have not been fulfilled."),
-                                new SubcommandData("cancel", "Cancel a limit order")
+                                new SubcommandData("market", "Place a market order")
+                                        .addOptions(
+                                                new OptionData(OptionType.STRING, "type", "The order direction BUY or SELL")
+                                                        .addChoice("buy", "buy")
+                                                        .addChoice("sell", "sell")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.STRING, "symbol", "The trading pair symbol (e.g., BTC/USDT)")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.STRING, "quantity", "The quantity of the asset to buy/sell")
+                                                        .setRequired(true)
+                                        ),
+                                new SubcommandData("list", "List still open orders"),
+                                new SubcommandData("cancel", "Cancel a open order")
                                         .addOptions(
                                                 new OptionData(OptionType.INTEGER, "id", "The ID of the order to cancel")
                                                         .setRequired(true)
@@ -109,7 +103,51 @@ public class SlashCommandConfig {
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
                         .addSubcommands(
                                 new SubcommandData("list", "View all assets and their balances")
+                        ),
+                Commands.slash(SlashCommands.SETTING, "Change bot settings")
+                        .setGuildOnly(true)
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
+                        .addSubcommands(
+                                new SubcommandData("global", "A setting that affects the entire bot")
+                                        .addOptions(
+                                                new OptionData(OptionType.STRING, "setting-id", "The setting identifier")
+                                                        .addChoice("ALERT_MESSAGE_CHANNEL", "ALERT_MESSAGE_CHANNEL")
+                                                        .addChoice("ORDER_MONITORING_CHANNEL", "ORDER_MONITORING_CHANNEL")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.CHANNEL, "channel", "The target channel")
+                                                        .setRequired(true)
+                                        ),
+                                new SubcommandData("deployment", "Change settings of strategy deployments")
+                                        .addOptions(
+                                                new OptionData(OptionType.STRING, "todo", "TODO")
+                                                        .addChoice("ALERT_MESSAGE_CHANNEL", "ALERT_MESSAGE_CHANNEL")
+                                                        .addChoice("ORDER_MONITORING_CHANNEL", "ORDER_MONITORING_CHANNEL")
+                                                        .setRequired(true)
+                                        )
+                        ),
+                Commands.slash(SlashCommands.STRATEGY, "Deploy and undeploy automated trading strategies")
+                        .setGuildOnly(true)
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
+                        .addSubcommands(
+                                new SubcommandData("deploy", "Deploy a new trading strategy")
+                                        .addOptions(
+                                                new OptionData(OptionType.STRING, "strategy-name", "The base-strategy identifier")
+                                                        .addChoices(strategyChoices())
+                                                        .setRequired(true)
+                                        ),
+                                new SubcommandData("undeploy", "Undeploy a trading strategy")
+                                        .addOptions(
+                                                new OptionData(OptionType.STRING, "deployment-id", "The strategy deployment id")
+                                                        .setRequired(true)
+                                        ),
+                                new SubcommandData("list", "List your deployed trading strategies")
                         )
         ).queue();
+    }
+
+    private Command.Choice[] strategyChoices() {
+        return strategyService.getAvailableStrategyNames().stream()
+                .map(strategyName -> new Command.Choice(strategyName, strategyName))
+                .toArray(Command.Choice[]::new);
     }
 }

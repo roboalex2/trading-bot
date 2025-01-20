@@ -3,6 +3,7 @@ package at.discord.bot.service.alert;
 import at.discord.bot.config.discord.DiscordConfigProperties;
 import at.discord.bot.mapper.AlertToEmbedMapper;
 import at.discord.bot.persistent.model.PriceAlertEntity;
+import at.discord.bot.service.channel.MessageChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
@@ -17,21 +18,20 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AlertMessagingService {
 
+    public static final String ALERT_MESSAGE_CHANNEL = "ALERT_MESSAGE_CHANNEL";
     private final JDA jdaInstance;
-    private final DiscordConfigProperties discordConfigProperties;
+    private final MessageChannelService messageChannelService;
     private final AlertToEmbedMapper alertToEmbedMapper;
 
     public void sendCrossAboveAlert(Num currentPrice, PriceAlertEntity priceAlertEntity) {
-        // TODO Dynamic source for target channel
-        Optional.ofNullable(jdaInstance.getTextChannelById(discordConfigProperties.getAlertChannel()))
+        Optional.ofNullable(jdaInstance.getTextChannelById(messageChannelService.getChannel(ALERT_MESSAGE_CHANNEL)))
                 .ifPresent(txt -> txt.sendMessageEmbeds(alertToEmbedMapper.mapToEmbed(currentPrice, priceAlertEntity))
                         .queue()
                 );
     }
 
     public void sendCrossBelowAlert(Num currentPrice, PriceAlertEntity priceAlertEntity) {
-        // TODO Dynamic source for target channel
-        Optional.ofNullable(jdaInstance.getTextChannelById(discordConfigProperties.getAlertChannel()))
+        Optional.ofNullable(jdaInstance.getTextChannelById(messageChannelService.getChannel(ALERT_MESSAGE_CHANNEL)))
                 .ifPresent(txt -> txt.sendMessageEmbeds(alertToEmbedMapper.mapToEmbed(currentPrice, priceAlertEntity))
                         .queue()
                 );

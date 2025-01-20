@@ -1,4 +1,4 @@
-package at.discord.bot.service.binance;
+package at.discord.bot.service.binance.symbol;
 
 import at.discord.bot.config.binance.BinanceConfigProperties;
 import at.discord.bot.persistent.PriceAlertRepository;
@@ -11,27 +11,25 @@ import org.json.JSONObject;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SymbolService {
+public class SymbolProviderService {
 
     private final BinanceConfigProperties binanceConfigProperties;
     private final PriceAlertRepository priceAlertRepository;
 
     @Cacheable("symbols")
-    public List<String> getAllAvailableSymbols() {
+    public Set<String> getAllAvailableSymbols() {
         SpotClientImpl spotClient = new SpotClientImpl(binanceConfigProperties.getBaseUrl());
         String result = spotClient.createMarket().exchangeInfo(Map.of());
         JSONObject jsonObject = new JSONObject(result);
 
         JSONArray symbolsArray = jsonObject.getJSONArray("symbols");
-        List<String> availableSymbols = new ArrayList<>();
+        Set<String> availableSymbols = new HashSet<>();
 
         // Extract symbols from the response
         for (int i = 0; i < symbolsArray.length(); i++) {

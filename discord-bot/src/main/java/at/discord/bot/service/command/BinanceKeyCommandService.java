@@ -1,19 +1,34 @@
 package at.discord.bot.service.command;
 
-import at.discord.bot.service.binance.credential.BinanceKeyService;
+import at.discord.bot.config.discord.SlashCommands;
+import at.discord.bot.model.binance.BinanceCredentials;
+import at.discord.bot.service.binance.credential.BinanceContextProviderService;
+import at.discord.bot.service.binance.credential.CredentialsDataAccessService;
+import at.discord.bot.service.binance.order.OrderMonitorService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class BinanceKeyCommandService {
+public class BinanceKeyCommandService implements CommandProcessor {
 
-    private final BinanceKeyService binanceKeyService;
+    private final static String COMMAND_NAME = SlashCommands.BINANCE_KEY;
 
+    private final CredentialsDataAccessService credentialsDataAccessService;
+    private final BinanceContextProviderService binanceContextProviderService;
+    private final OrderMonitorService orderMonitorService;
+
+    @Override
     public void processCommand(SlashCommandInteractionEvent event) {
         String subcommand = event.getSubcommandName();
         if (subcommand == null || event.getUser() == null || event.getGuild() == null) {
@@ -42,38 +57,43 @@ public class BinanceKeyCommandService {
 
     private void setBinanceKey(SlashCommandInteractionEvent event) {
         // Get the Binance API key from the user input
-        String apiKey = Optional.ofNullable(event.getOption("api-key"))
+        byte[] apiKey = Optional.ofNullable(event.getOption("api-key"))
                 .map(OptionMapping::getAsString)
+                .map(el -> el.getBytes(StandardCharsets.UTF_8))
                 .orElse(null);
 
-        if (apiKey == null || apiKey.isEmpty()) {
+        if (apiKey == null || apiKey.length == 0) {
             event.getHook().sendMessage("The API key is required.")
                     .queue();
             return;
         }
 
-        // Validate the API key by attempting to use it with the Binance API (or mock this process)
-        boolean isValid = binanceKeyService.validateApiKey(apiKey);
-
-        if (!isValid) {
-            event.getHook().sendMessage("The provided API key is invalid.")
+        byte[] secretApiKey = null;
+        try {
+            String url = event.getOption("secret-api-key").getAsAttachment().getUrl();
+            InputStream inputStream = new URL(url).openStream();
+            secretApiKey = inputStream.readAllBytes();
+        } catch (RuntimeException | IOException exception) {
+            log.warn("Binance Key File Download Failed", exception);
+            event.getHook().sendMessage("Failed to download key-file. Details: " + exception.getMessage())
                     .queue();
             return;
         }
 
-        // Store the valid API key for the user
-        boolean success = binanceKeyService.setApiKey(event.getUser().getId(), apiKey);
-        if (success) {
-            event.getHook().sendMessage("Your Binance API key has been set successfully!")
-                    .queue();
-        } else {
-            event.getHook().sendMessage("An error occurred while setting your Binance API key.")
-                    .queue();
-        }
+        BinanceCredentials credentials = BinanceCredentials.builder()
+                .discordUserId(event.getUser().getIdLong())
+                .apiKey(apiKey)
+                .secretApiKey(secretApiKey)
+                .build();
+
+        credentialsDataAccessService.setCredentials(credentials);
+        event.getHook().sendMessage("Your Binance API key has been set successfully. Try a command to check validity!")
+                .queue();
+        orderMonitorService.registerUserMonitor(binanceContextProviderService.getUserContext(credentials.getDiscordUserId()));
     }
 
     private void clearBinanceKey(SlashCommandInteractionEvent event) {
-        boolean success = binanceKeyService.clearApiKey(event.getUser().getId());
+        boolean success = credentialsDataAccessService.clearCredentials(event.getUser().getIdLong());
         if (success) {
             event.getHook().sendMessage("Your Binance API key has been cleared.")
                     .queue();
@@ -81,5 +101,10 @@ public class BinanceKeyCommandService {
             event.getHook().sendMessage("You don't have a Binance API key set.")
                     .queue();
         }
+    }
+
+    @Override
+    public String getCommandName() {
+        return COMMAND_NAME;
     }
 }

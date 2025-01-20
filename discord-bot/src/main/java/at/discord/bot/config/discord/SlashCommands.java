@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 public class SlashCommands {
     public static final String ALERT = "alert";
     public static final String BINANCE_KEY = "binance-key";
-    public static final String ORDER_MARKET = "order-market";
-    public static final String ORDER_LIMIT = "order-limit";
+    public static final String ORDER = "order";
     public static final String ASSET = "asset";
+    public static final String SETTING = "setting";
+    public static final String STRATEGY = "strategy";
 }
