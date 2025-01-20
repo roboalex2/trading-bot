@@ -154,6 +154,11 @@ public class SlashCommandConfig {
                                                 new OptionData(OptionType.INTEGER, "deployment-id", "The strategy deployment to be resumed")
                                                         .setRequired(true)
                                         ),
+                                new SubcommandData("show", "Show details about a strategy deployment")
+                                        .addOptions(
+                                                new OptionData(OptionType.INTEGER, "deployment-id", "The strategy deployment to show")
+                                                        .setRequired(true)
+                                        ),
                                 new SubcommandData("list", "List your deployed trading strategies")
                         )
         ).queue();

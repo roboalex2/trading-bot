@@ -55,6 +55,9 @@ public class StrategyCommandService implements CommandProcessor {
             case "start":
                 handleStartStrategy(event);
                 break;
+            case "show":
+                handleShowStrategy(event);
+                break;
             case "list":
                 handleListStrategies(event);
                 break;
@@ -165,6 +168,41 @@ public class StrategyCommandService implements CommandProcessor {
             event.getHook().sendMessage(String.format("Failed to start/resume strategy deployment `%d`. Reason: %s", deploymentId, e.getMessage()))
                     .queue();
         }
+    }
+
+    private void handleShowStrategy(SlashCommandInteractionEvent event) {
+        Long deploymentId = getValidatedLong(event, "deployment-id", "deployment ID");
+        if (deploymentId == null) {
+            return; // Validation error message already sent
+        }
+
+        Long userId = event.getUser().getIdLong();
+        StrategyDeploymentEntity deploymentEntity = strategyDeploymentRepository.findByDeploymentId(deploymentId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No strategy deployment found with ID `" + deploymentId + "`."
+                ));
+
+        // Validate ownership
+        if (!deploymentEntity.getDiscordUserId().equals(userId)) {
+            throw new IllegalArgumentException("No strategy deployment found with ID `" + deploymentId + "`.");
+        }
+
+        // Build a detailed message with all fields of the entity.
+        // Make sure to handle any null checks if needed.
+        StringBuilder sb = new StringBuilder("```\n");
+        sb.append("Deployment ID: ").append(deploymentEntity.getDeploymentId()).append("\n");
+        sb.append("Strategy Name: ").append(deploymentEntity.getStrategyName()).append("\n");
+        sb.append("Discord User ID: ").append(deploymentEntity.getDiscordUserId()).append("\n");
+        sb.append("Active: ").append(deploymentEntity.getActive()).append("\n");
+        sb.append("Created At: ").append(deploymentEntity.getCreatedAt()).append("\n");
+        if (deploymentEntity.getUpdatedAt() != null) {
+            sb.append("Updated At: ").append(deploymentEntity.getUpdatedAt()).append("\n");
+        }
+        sb.append("Deployment Settings: ").append(deploymentEntity.getDeploymentSettings()).append("\n");
+
+        sb.append("```");
+
+        event.getHook().sendMessage(sb.toString()).queue();
     }
 
     private void handleListStrategies(SlashCommandInteractionEvent event) {
