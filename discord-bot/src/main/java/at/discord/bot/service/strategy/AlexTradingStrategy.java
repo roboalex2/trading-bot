@@ -23,15 +23,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AlexTradingStrategy implements BaseStrategy {
 
     private static final Map<String, String> DEFAULT_SETTINGS = Map.of(
-            "SYMBOL", "PEPEFDUSD"
+            "SYMBOL", "PEPEFDUSD",
+            "SHORT_SMA_LENGTH", "50",
+            "LONG_SMA_LENGTH", "150",
+            "MIN_ORDER_INTERVAL_SECONDS", "30",
+            "TRADE_QUANTITY", "156524"  // Example default quantity
     );
-
-    // TA4J configuration
-    private static final int SHORT_SMA_LENGTH = 50;
-    private static final int LONG_SMA_LENGTH = 150;
-
-    // Minimal gap between trades, in seconds (to prevent spam)
-    private static final long MIN_ORDER_INTERVAL_SECONDS = 30;
 
     private final BarSeriesHolderService barSeriesHolderService;
     private final SymbolPriceMonitorService symbolPriceMonitorService;
@@ -54,47 +51,55 @@ public class AlexTradingStrategy implements BaseStrategy {
     public String getStrategyName() {
         return "SIMPLE_SMA";
     }
-
     @Override
     public void update(StrategyDeploymentContext deploymentContext) {
         long deploymentId = deploymentContext.getDeploymentId();
-        // Fetch or create state object for this deployment
+
+        // Obtain or create a DeploymentState for this particular deployment
         DeploymentState state = stateMap.computeIfAbsent(deploymentId, id -> new DeploymentState());
 
-        String symbol = deploymentContext.getSettings().get("SYMBOL");
+        // Fetch the strategy settings from the deployment context
+        Map<String, String> settings = deploymentContext.getSettings();
+
+        // Parse each setting
+        String symbol = settings.get("SYMBOL");
+        int shortSmaLength = Integer.parseInt(settings.get("SHORT_SMA_LENGTH"));
+        int longSmaLength = Integer.parseInt(settings.get("LONG_SMA_LENGTH"));
+        long minOrderIntervalSeconds = Long.parseLong(settings.get("MIN_ORDER_INTERVAL_SECONDS"));
+        String quantity = settings.get("TRADE_QUANTITY"); // e.g., "156524"
+
         // Get the BarSeries for the symbol
         BarSeries barSeries = barSeriesHolderService.getBarSeries(symbol);
         if (barSeries == null || barSeries.isEmpty()) {
-            // If no data, register the symbol and exit
+            // If no data, ensure we monitor the symbol; no further logic
             symbolPriceMonitorService.registerSymbol(symbol);
             return;
         }
 
-        // Need enough bars to compute SMA
-        if (barSeries.getBarCount() < LONG_SMA_LENGTH) {
+        // Need enough bars to compute the long SMA
+        if (barSeries.getBarCount() < longSmaLength) {
             return;
         }
 
         // Check minimal gap between orders
         Instant now = Instant.now();
-        if (now.minusSeconds(MIN_ORDER_INTERVAL_SECONDS).isBefore(state.lastOrderTime)) {
+        if (now.minusSeconds(minOrderIntervalSeconds).isBefore(state.lastOrderTime)) {
             // Too soon since last order - skip
             return;
         }
 
         // --- Compute Indicators ---
         ClosePriceIndicator closePrice = new ClosePriceIndicator(barSeries);
-        SMAIndicator shortSma = new SMAIndicator(closePrice, SHORT_SMA_LENGTH);
-        SMAIndicator longSma = new SMAIndicator(closePrice, LONG_SMA_LENGTH);
+        SMAIndicator shortSma = new SMAIndicator(closePrice, shortSmaLength);
+        SMAIndicator longSma = new SMAIndicator(closePrice, longSmaLength);
 
         int endIndex = barSeries.getEndIndex();
         double shortValue = shortSma.getValue(endIndex).doubleValue();
         double longValue = longSma.getValue(endIndex).doubleValue();
 
-        // Simple SMA crossing logic
+        // --- Simple SMA crossing logic ---
         // If shortSMA > longSMA => bullish => Buy if not in position
         if (!state.inPosition && shortValue > longValue) {
-            String quantity = "156524"; // Example
             try {
                 Long orderId = orderService.placeMarketOrder(
                         deploymentContext.getDiscordUserId(),
@@ -114,7 +119,6 @@ public class AlexTradingStrategy implements BaseStrategy {
         }
         // If shortSMA < longSMA => bearish => Sell if in position
         else if (state.inPosition && shortValue < longValue) {
-            String quantity = "156524";
             try {
                 Long orderId = orderService.placeMarketOrder(
                         deploymentContext.getDiscordUserId(),
