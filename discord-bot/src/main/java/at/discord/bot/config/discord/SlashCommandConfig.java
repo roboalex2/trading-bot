@@ -121,7 +121,7 @@ public class SlashCommandConfig {
                                         .addOptions(
                                                 new OptionData(OptionType.INTEGER, "deployment-id", "The deployment you want to reconfigure")
                                                         .setRequired(true),
-                                                new OptionData(OptionType.STRING, "setting-id", "The setting you want to change")
+                                                new OptionData(OptionType.STRING, "setting-key", "The setting you want to change")
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "setting-value", "The value you want to apply to the setting")
                                                         .setRequired(true)
@@ -141,17 +141,17 @@ public class SlashCommandConfig {
                                         ),
                                 new SubcommandData("undeploy", "Undeploy a trading strategy deployment")
                                         .addOptions(
-                                                new OptionData(OptionType.NUMBER, "deployment-id", "The strategy deployment id")
+                                                new OptionData(OptionType.INTEGER, "deployment-id", "The strategy deployment id")
                                                         .setRequired(true)
                                         ),
                                 new SubcommandData("pause", "Pause a strategy deployment")
                                         .addOptions(
-                                                new OptionData(OptionType.NUMBER, "deployment-id", "The strategy deployment id")
+                                                new OptionData(OptionType.INTEGER, "deployment-id", "The strategy deployment id")
                                                         .setRequired(true)
                                         ),
                                 new SubcommandData("start", "Start/Resume a strategy deployment's operations")
                                         .addOptions(
-                                                new OptionData(OptionType.NUMBER, "deployment-id", "The strategy deployment to be resumed")
+                                                new OptionData(OptionType.INTEGER, "deployment-id", "The strategy deployment to be resumed")
                                                         .setRequired(true)
                                         ),
                                 new SubcommandData("list", "List your deployed trading strategies")

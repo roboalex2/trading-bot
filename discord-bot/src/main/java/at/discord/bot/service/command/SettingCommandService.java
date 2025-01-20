@@ -88,7 +88,7 @@ public class SettingCommandService implements CommandProcessor {
 
     private void handleDeploymentSettings(SlashCommandInteractionEvent event) {
         Long deploymentId = getValidatedLongOption(event, "deployment-id", "deployment ID");
-        String settingId = getValidatedStringOption(event, "setting-id", "deployment setting ID");
+        String settingId = getValidatedStringOption(event, "setting-key", "deployment setting key");
         String settingValue = getValidatedStringOption(event, "setting-value", "deployment setting value");
 
         if (deploymentId == null || settingId == null || settingValue == null) {
