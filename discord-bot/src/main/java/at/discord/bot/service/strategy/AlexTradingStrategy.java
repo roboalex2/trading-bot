@@ -27,8 +27,8 @@ public class AlexTradingStrategy implements BaseStrategy {
     );
 
     // TA4J configuration
-    private static final int SHORT_SMA_LENGTH = 5;
-    private static final int LONG_SMA_LENGTH = 15;
+    private static final int SHORT_SMA_LENGTH = 50;
+    private static final int LONG_SMA_LENGTH = 150;
 
     // Minimal gap between trades, in seconds (to prevent spam)
     private static final long MIN_ORDER_INTERVAL_SECONDS = 30;
@@ -47,7 +47,7 @@ public class AlexTradingStrategy implements BaseStrategy {
 
     @Override
     public Map<String, String> getDefaultSetting() {
-        return DEFAULT_SETTINGS;
+        return new ConcurrentHashMap<>(DEFAULT_SETTINGS);
     }
 
     @Override

@@ -1,7 +1,10 @@
 package at.discord.bot.service.command;
 
 import at.discord.bot.config.discord.SlashCommands;
+import at.discord.bot.persistent.StrategyDeploymentRepository;
 import at.discord.bot.persistent.model.StrategyDeploymentEntity;
+import at.discord.bot.service.binance.credential.BinanceContextProviderService;
+import at.discord.bot.service.strategy.ActiveStrategyDeploymentService;
 import at.discord.bot.service.strategy.StrategyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +12,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +24,9 @@ public class StrategyCommandService implements CommandProcessor {
     private final static String COMMAND_NAME = SlashCommands.STRATEGY;
 
     private final StrategyService strategyService;
+    private final ActiveStrategyDeploymentService activeStrategyDeploymentService;
+    private final StrategyDeploymentRepository strategyDeploymentRepository;
+    private final BinanceContextProviderService binanceContextProviderService;
 
     @Override
     public void processCommand(SlashCommandInteractionEvent event) {
@@ -42,6 +49,12 @@ public class StrategyCommandService implements CommandProcessor {
             case "undeploy":
                 handleUndeployStrategy(event);
                 break;
+            case "pause":
+                handlePauseStrategy(event);
+                break;
+            case "start":
+                handleStartStrategy(event);
+                break;
             case "list":
                 handleListStrategies(event);
                 break;
@@ -57,9 +70,14 @@ public class StrategyCommandService implements CommandProcessor {
             return; // Validation error message already sent
         }
 
+        Boolean strategyActive = getValidatedBoolean(event, "strategy-active", "strategy active status");
+        if (strategyActive == null) {
+            return; // Validation error message already sent
+        }
+
         try {
             Long userId = event.getUser().getIdLong();
-            Long deploymentId = strategyService.deployStrategy(userId, strategyName);
+            Long deploymentId = strategyService.deployStrategy(userId, strategyName, strategyActive);
 
             event.getHook().sendMessage(String.format("Strategy `%s` deployed successfully with ID `%d`.", strategyName, deploymentId))
                     .queue();
@@ -89,6 +107,66 @@ public class StrategyCommandService implements CommandProcessor {
         }
     }
 
+    private void handlePauseStrategy(SlashCommandInteractionEvent event) {
+        Long deploymentId = getValidatedLong(event, "deployment-id", "deployment ID");
+        if (deploymentId == null) {
+            return; // Validation error message already sent
+        }
+
+        try {
+            Long userId = event.getUser().getIdLong();
+            // Fetch the deployment entity to ensure ownership
+            StrategyDeploymentEntity deploymentEntity = strategyDeploymentRepository.findByDeploymentId(deploymentId)
+                    .orElseThrow(() -> new IllegalArgumentException("No strategy with ID `" + deploymentId + "` found."));
+
+            if (!deploymentEntity.getDiscordUserId().equals(userId)) {
+                throw new IllegalArgumentException("No strategy with ID `" + deploymentId + "` found.");
+            }
+            boolean active = deploymentEntity.getActive();
+
+            activeStrategyDeploymentService.makeInactiveDeployment(deploymentId);
+            event.getHook().sendMessage(String.format("Strategy deployment `%d` set to paused (active=`false`) successfully. Previous active=`%b`", deploymentId, active))
+                    .queue();
+        } catch (Exception e) {
+            log.warn("Error pausing strategy with ID {}: {}", deploymentId, e.getMessage());
+            event.getHook().sendMessage(String.format("Failed to pause strategy deployment `%d`. Reason: %s", deploymentId, e.getMessage()))
+                    .queue();
+        }
+    }
+
+    private void handleStartStrategy(SlashCommandInteractionEvent event) {
+        long userId = event.getUser().getIdLong();
+        Long deploymentId = getValidatedLong(event, "deployment-id", "deployment ID");
+        if (deploymentId == null) {
+            return; // Validation error message already sent
+        }
+
+        if (binanceContextProviderService.getUserContext(userId) == null) {
+            event.getHook().sendMessage("Cannot start the strategy because Binance credentials are not set for your account.")
+                    .queue();
+            return;
+        }
+
+        try {
+            StrategyDeploymentEntity deploymentEntity = strategyDeploymentRepository.findByDeploymentId(deploymentId)
+                    .orElseThrow(() -> new IllegalArgumentException("No strategy with ID `" + deploymentId + "` found."));
+
+            if (!deploymentEntity.getDiscordUserId().equals(userId)) {
+                throw new IllegalArgumentException("No strategy with ID `" + deploymentId + "` found.");
+            }
+            boolean active = deploymentEntity.getActive();
+
+            activeStrategyDeploymentService.makeActiveDeployment(deploymentEntity);
+
+            event.getHook().sendMessage(String.format("Strategy deployment `%d` set started/resumed (active=`true`) successfully. Previous active=`%b`", deploymentId, active))
+                    .queue();
+        } catch (Exception e) {
+            log.warn("Error starting strategy with ID {}: {}", deploymentId, e.getMessage());
+            event.getHook().sendMessage(String.format("Failed to start/resume strategy deployment `%d`. Reason: %s", deploymentId, e.getMessage()))
+                    .queue();
+        }
+    }
+
     private void handleListStrategies(SlashCommandInteractionEvent event) {
         Long userId = event.getUser().getIdLong();
         List<StrategyDeploymentEntity> deployments = strategyService.listStrategyDeployments(userId);
@@ -99,16 +177,28 @@ public class StrategyCommandService implements CommandProcessor {
             return;
         }
 
-        StringBuilder response = new StringBuilder("```\n");
+        StringBuilder response = new StringBuilder("**Your Strategy Deployments:**\n");
         for (StrategyDeploymentEntity deployment : deployments) {
-            response.append(String.format("Strategy: %s | ID: %d | Created At: %s\n",
-                    deployment.getStrategyName(),
+            String status = deployment.getActive() ? "✅ Active" : "⏸️ Paused";
+            String createdAtFormatted = deployment.getCreatedAt().toLocalDateTime()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            response.append(String.format("- **ID:** %d | **Strategy:** %s | **Status:** %s | **Created:** %s\n",
                     deployment.getDeploymentId(),
-                    deployment.getCreatedAt().toString()));
+                    deployment.getStrategyName(),
+                    status,
+                    createdAtFormatted));
         }
-        response.append("```");
 
         event.getHook().sendMessage(response.toString()).queue();
+    }
+
+    private Boolean getValidatedBoolean(SlashCommandInteractionEvent event, String optionName, String displayName) {
+        return Optional.ofNullable(event.getOption(optionName))
+                .map(OptionMapping::getAsBoolean)
+                .orElseGet(() -> {
+                    event.getHook().sendMessage(String.format("Please provide a valid %s.", displayName)).queue();
+                    return null;
+                });
     }
 
     private String getValidatedString(SlashCommandInteractionEvent event, String optionName, String displayName) {

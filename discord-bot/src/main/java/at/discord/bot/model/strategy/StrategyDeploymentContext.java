@@ -13,6 +13,5 @@ public class StrategyDeploymentContext {
     private long deploymentId;
     private long discordUserId;
     private String strategyName;
-    private BinanceContext binanceContext;
     private Map<String, String> settings;
 }

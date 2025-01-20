@@ -14,6 +14,7 @@ import okhttp3.Response;
 import org.json.JSONObject;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +43,16 @@ public class OrderMonitorService {
             .forEach(this::registerUserMonitor);
     }
 
-    public synchronized void registerUserMonitor(BinanceContext context) {
+    @Async
+    public void registerUserMonitor(long userId) {
+        BinanceContext userContext = binanceContextProviderService.getUserContext(userId);
+        if (userContext == null) {
+            throw new RuntimeException("User has no binance credentials set. Can not start order monitor.");
+        }
+        registerUserMonitor(userContext);
+    }
+
+    private synchronized void registerUserMonitor(BinanceContext context) {
         if (activeListenKeys.get(context.getDiscordUserId()) != null) {
             invalidateListenKey(context);
             if (openWebSockets.get(context.getDiscordUserId()) != null) {
@@ -66,6 +76,16 @@ public class OrderMonitorService {
 
         openWebSockets.put(context.getDiscordUserId(), streamId);
         activeListenKeys.put(context.getDiscordUserId(), listenKey);
+    }
+
+    public synchronized void unregisterUserMonitor(long userId) {
+        if (activeListenKeys.get(userId) != null) {
+            if (openWebSockets.get(userId) != null) {
+                webSocketStreamClient.closeConnection(openWebSockets.get(userId));
+            }
+            activeListenKeys.remove(userId);
+            openWebSockets.remove(userId);
+        }
     }
 
     private void userDataUpdateEvent(BinanceContext context, String message) {
@@ -115,12 +135,12 @@ public class OrderMonitorService {
     private void websocketFailureEvent(BinanceContext context, Throwable throwable, Response response) {
         log.warn(response.message(), throwable);
         invalidateListenKey(context);
-        registerUserMonitor(context);
+        registerUserMonitor(context.getDiscordUserId());
     }
 
     private void websocketClosureEvent(BinanceContext context, int i, String message) {
         log.warn(message);
         invalidateListenKey(context);
-        registerUserMonitor(context);
+        registerUserMonitor(context.getDiscordUserId());
     }
 }

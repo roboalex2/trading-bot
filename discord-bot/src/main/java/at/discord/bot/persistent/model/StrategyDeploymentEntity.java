@@ -20,6 +20,7 @@ public class StrategyDeploymentEntity {
     private Long discordUserId;
     private String strategyName;
     private String deploymentSettings;
+    private Boolean active;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -23,7 +22,7 @@ public class StrategyService {
     private final BinanceContextProviderService binanceContextProviderService;
     private final ObjectMapper objectMapper;
     private final StrategyDeploymentRepository strategyDeploymentRepository;
-    private final StrategyDeploymentProcessorService strategyDeploymentProcessorService;
+    private final ActiveStrategyDeploymentService activeStrategyDeploymentService;
 
     public List<String> getAvailableStrategyNames() {
         return baseStrategyList.stream()
@@ -38,7 +37,7 @@ public class StrategyService {
                 .orElseThrow(() -> new IllegalArgumentException("Provided Strategy not found: " + strategyName));
     }
 
-    public Long deployStrategy(Long userId, String strategyName) {
+    public Long deployStrategy(Long userId, String strategyName, boolean active) {
         BaseStrategy baseStrategy = getStrategy(strategyName);
         BinanceContext userContext = binanceContextProviderService.getUserContext(userId);
         if (userContext == null) {
@@ -52,9 +51,12 @@ public class StrategyService {
             stratDeploy.setStrategyName(strategyName);
             stratDeploy.setDeploymentSettings(objectMapper.writeValueAsString(defaultSetting));
             stratDeploy.setDiscordUserId(userId);
+            stratDeploy.setActive(active);
             StrategyDeploymentEntity saveDeployment = strategyDeploymentRepository.save(stratDeploy);
 
-            strategyDeploymentProcessorService.makeActiveDeployment(saveDeployment);
+            if (active) {
+                activeStrategyDeploymentService.makeActiveDeployment(saveDeployment);
+            }
 
             return saveDeployment.getDeploymentId();
         } catch (Exception e) {
@@ -65,14 +67,14 @@ public class StrategyService {
 
     public void undeployStrategy(Long deploymentId, Long userId) {
         StrategyDeploymentEntity byDeploymentId = strategyDeploymentRepository.findByDeploymentId(deploymentId)
-                .orElseThrow(() -> new IllegalArgumentException("No strategy with id=" + deploymentId + " found."));
+                .orElseThrow(() -> new IllegalArgumentException("No strategy with id=`" + deploymentId + "` found."));
 
         if (!Objects.equals(byDeploymentId.getDiscordUserId(), userId)) {
             throw new IllegalArgumentException("No strategy with id=" + deploymentId + " found.");
         }
 
         strategyDeploymentRepository.delete(byDeploymentId);
-        strategyDeploymentProcessorService.removeActiveDeployment(deploymentId);
+        activeStrategyDeploymentService.makeInactiveDeployment(deploymentId);
     }
 
     public List<StrategyDeploymentEntity> listStrategyDeployments(Long userId) {

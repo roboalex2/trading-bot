@@ -119,9 +119,11 @@ public class SlashCommandConfig {
                                         ),
                                 new SubcommandData("deployment", "Change settings of strategy deployments")
                                         .addOptions(
-                                                new OptionData(OptionType.STRING, "todo", "TODO")
-                                                        .addChoice("ALERT_MESSAGE_CHANNEL", "ALERT_MESSAGE_CHANNEL")
-                                                        .addChoice("ORDER_MONITORING_CHANNEL", "ORDER_MONITORING_CHANNEL")
+                                                new OptionData(OptionType.INTEGER, "deployment-id", "The deployment you want to reconfigure")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.STRING, "setting-id", "The setting you want to change")
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.STRING, "setting-value", "The value you want to apply to the setting")
                                                         .setRequired(true)
                                         )
                         ),
@@ -133,11 +135,23 @@ public class SlashCommandConfig {
                                         .addOptions(
                                                 new OptionData(OptionType.STRING, "strategy-name", "The base-strategy identifier")
                                                         .addChoices(strategyChoices())
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.BOOLEAN, "strategy-active", "Whether the strategy is active from the start or needs to be resumed.")
                                                         .setRequired(true)
                                         ),
-                                new SubcommandData("undeploy", "Undeploy a trading strategy")
+                                new SubcommandData("undeploy", "Undeploy a trading strategy deployment")
                                         .addOptions(
-                                                new OptionData(OptionType.STRING, "deployment-id", "The strategy deployment id")
+                                                new OptionData(OptionType.NUMBER, "deployment-id", "The strategy deployment id")
+                                                        .setRequired(true)
+                                        ),
+                                new SubcommandData("pause", "Pause a strategy deployment")
+                                        .addOptions(
+                                                new OptionData(OptionType.NUMBER, "deployment-id", "The strategy deployment id")
+                                                        .setRequired(true)
+                                        ),
+                                new SubcommandData("start", "Start/Resume a strategy deployment's operations")
+                                        .addOptions(
+                                                new OptionData(OptionType.NUMBER, "deployment-id", "The strategy deployment to be resumed")
                                                         .setRequired(true)
                                         ),
                                 new SubcommandData("list", "List your deployed trading strategies")
