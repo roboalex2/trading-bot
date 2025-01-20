@@ -47,7 +47,10 @@ public class OrderMapper {
 
     private BigDecimal getExecutionPrice(JSONObject jsonObject) {
         if (!jsonObject.has("p") || jsonObject.getBigDecimal("p").doubleValue() == 0d) {
-            if (jsonObject.has("Z") && jsonObject.has("z")) {
+            if (jsonObject.has("Z") && jsonObject.has("z")
+                    && jsonObject.getBigDecimal("Z").doubleValue() != 0d
+                    && jsonObject.getBigDecimal("z").doubleValue() != 0d
+            ) {
                 return jsonObject.getBigDecimal("Z").divide(jsonObject.getBigDecimal("z"), RoundingMode.HALF_UP);
             }
             return jsonObject.has("P") && jsonObject.getBigDecimal("P").doubleValue() != 0d ? jsonObject.getBigDecimal("P") : new BigDecimal(-1);

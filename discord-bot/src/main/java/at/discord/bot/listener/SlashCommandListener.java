@@ -51,67 +51,68 @@ public class SlashCommandListener extends ListenerAdapter {
         if (guild == null) {
             return;
         }
+        log.info("Auto-complete event with option: {}", optionName);
 
-        if ("symbol".equals(optionName)) {
-            event.replyChoices(symbolProviderService.getAllAvailableSymbols().stream()
-                            .limit(25)
-                            .map(el -> new Command.Choice(el, el))
-                            .collect(Collectors.toList()))
-                    .queue();
-            return;
+        switch (optionName) {
+            case "symbol" -> {
+                event.replyChoices(symbolProviderService.getAllAvailableSymbols().stream()
+                                .limit(25)
+                                .map(el -> new Command.Choice(el, el))
+                                .collect(Collectors.toList()))
+                        .queue();
+                return;
+            }
+            case "deployment-id" -> {
+                List<StrategyDeploymentEntity> allByDiscordUserId = strategyDeploymentRepository.findAllByDiscordUserId(event.getUser().getIdLong());
+
+                event.replyChoices(allByDiscordUserId.stream()
+                                .limit(25)
+                                .map(el -> new Command.Choice("" + el.getDeploymentId(), el.getDeploymentId()))
+                                .collect(Collectors.toList()))
+                        .queue();
+                return;
+            }
+            case "setting-key" -> {
+                int deployId = event.getOptions().stream()
+                        .filter(el -> "deployment-id".equals(el.getName()))
+                        .findFirst()
+                        .map(OptionMapping::getAsInt)
+                        .orElse(0);
+
+                String stratName = strategyDeploymentRepository.findByDeploymentId((long) deployId)
+                        .map(StrategyDeploymentEntity::getStrategyName)
+                        .orElse(null);
+                Map<String, String> defaultSetting = strategyService.getStrategy(stratName).getDefaultSetting();
+
+                event.replyChoices(defaultSetting.keySet().stream()
+                                .limit(25)
+                                .map(el -> new Command.Choice(el, el))
+                                .collect(Collectors.toList()))
+                        .queue();
+                return;
+            }
+            case "setting-value" -> {
+                int deployId = event.getOptions().stream()
+                        .filter(el -> "deployment-id".equals(el.getName()))
+                        .findFirst()
+                        .map(OptionMapping::getAsInt)
+                        .orElse(0);
+                String settingKey = event.getOptions().stream()
+                        .filter(el -> "setting-key".equals(el.getName()))
+                        .findFirst()
+                        .map(OptionMapping::getAsString)
+                        .orElse("");
+
+                String stratName = strategyDeploymentRepository.findByDeploymentId((long) deployId)
+                        .map(StrategyDeploymentEntity::getStrategyName)
+                        .orElse(null);
+                Map<String, String> defaultSetting = strategyService.getStrategy(stratName).getDefaultSetting();
+
+                event.replyChoices(new Command.Choice(defaultSetting.get(settingKey), defaultSetting.get(settingKey)))
+                        .queue();
+                return;
+            }
         }
 
-        if ("deployment-id".equals(optionName)) {
-            List<StrategyDeploymentEntity> allByDiscordUserId = strategyDeploymentRepository.findAllByDiscordUserId(event.getUser().getIdLong());
-
-            event.replyChoices(allByDiscordUserId.stream()
-                            .limit(25)
-                            .map(el -> new Command.Choice(""+el.getDeploymentId(), el.getDeploymentId()))
-                            .collect(Collectors.toList()))
-                    .queue();
-            return;
-        }
-
-        if ("setting-key".equals(optionName)) {
-            int deployId = event.getOptions().stream()
-                    .filter(el -> "deployment-id".equals(el.getName()))
-                    .findFirst()
-                    .map(OptionMapping::getAsInt)
-                    .orElse(0);
-
-            String stratName = strategyDeploymentRepository.findByDeploymentId((long) deployId)
-                    .map(StrategyDeploymentEntity::getStrategyName)
-                    .orElse(null);
-            Map<String, String> defaultSetting = strategyService.getStrategy(stratName).getDefaultSetting();
-
-            event.replyChoices(defaultSetting.keySet().stream()
-                            .limit(25)
-                            .map(el -> new Command.Choice(el, el))
-                            .collect(Collectors.toList()))
-                    .queue();
-            return;
-        }
-
-        if ("setting-value".equals(optionName)) {
-            int deployId = event.getOptions().stream()
-                    .filter(el -> "deployment-id".equals(el.getName()))
-                    .findFirst()
-                    .map(OptionMapping::getAsInt)
-                    .orElse(0);
-            String settingKey = event.getOptions().stream()
-                    .filter(el -> "setting-key".equals(el.getName()))
-                    .findFirst()
-                    .map(OptionMapping::getAsString)
-                    .orElse("");
-
-            String stratName = strategyDeploymentRepository.findByDeploymentId((long) deployId)
-                    .map(StrategyDeploymentEntity::getStrategyName)
-                    .orElse(null);
-            Map<String, String> defaultSetting = strategyService.getStrategy(stratName).getDefaultSetting();
-
-            event.replyChoices(new Command.Choice(defaultSetting.get(settingKey), defaultSetting.get(settingKey)))
-                    .queue();
-            return;
-        }
     }
 }
