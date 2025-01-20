@@ -41,9 +41,13 @@ public class OrderEmbedMapper {
             if (includeUser && order.getDiscordUserId() != null) {
                 User user = userService.getUser(order.getDiscordUserId());
                 if (user != null) {
-                    String username = user.getName();
-                    String avatarUrl = user.getEffectiveAvatarUrl();
-                    embedBuilder.setAuthor(username, null, avatarUrl);
+                    try {
+                        String username = user.getName();
+                        String avatarUrl = user.getEffectiveAvatarUrl();
+                        embedBuilder.setAuthor(username, null, avatarUrl);
+                    } catch (Exception exception) {
+                        embedBuilder.setAuthor(order.getDiscordUserId() + "", null, null);
+                    }
                 }
             }
 

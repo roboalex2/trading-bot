@@ -33,9 +33,13 @@ public class StrategyDeploymentEmbedMapper {
 
             User user = userService.getUser(context.getDiscordUserId());
             if (user != null) {
-                String username = user.getName();
-                String avatarUrl = user.getEffectiveAvatarUrl();
-                embedBuilder.setAuthor(username, null, avatarUrl);
+                try {
+                    String username = user.getName();
+                    String avatarUrl = user.getEffectiveAvatarUrl();
+                    embedBuilder.setAuthor(username, null, avatarUrl);
+                } catch (Exception exception) {
+                    embedBuilder.setAuthor(context.getDiscordUserId() + "", null, null);
+                }
             } else {
                 embedBuilder.setAuthor("Unknown User");
             }
