@@ -37,6 +37,7 @@ public class SlashCommandConfig {
                                 new SubcommandData("add", "Create a new price alert")
                                         .addOptions(
                                                 new OptionData(OptionType.STRING, "symbol", "The symbol (base/quote asset pair) we want an alert for")
+                                                        .setAutoComplete(true)
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "price", "If this price is crossed the alert fires")
                                                         .setRequired(true)
@@ -44,6 +45,7 @@ public class SlashCommandConfig {
                                 new SubcommandData("remove", "Remove a price alert")
                                         .addOptions(
                                                 new OptionData(OptionType.STRING, "symbol", "The symbol (base/quote asset pair) of the alert")
+                                                        .setAutoComplete(true)
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "price", "The trigger price of the alert")
                                                         .setRequired(true)
@@ -74,6 +76,7 @@ public class SlashCommandConfig {
                                                         .addChoice("sell", "sell")
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "symbol", "The trading pair symbol (e.g., BTC/USDT)")
+                                                        .setAutoComplete(true)
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "quantity", "The quantity of the asset to buy/sell")
                                                         .setRequired(true),
@@ -87,6 +90,7 @@ public class SlashCommandConfig {
                                                         .addChoice("sell", "sell")
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "symbol", "The trading pair symbol (e.g., BTC/USDT)")
+                                                        .setAutoComplete(true)
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "quantity", "The quantity of the asset to buy/sell")
                                                         .setRequired(true)
@@ -120,10 +124,13 @@ public class SlashCommandConfig {
                                 new SubcommandData("deployment", "Change settings of strategy deployments")
                                         .addOptions(
                                                 new OptionData(OptionType.INTEGER, "deployment-id", "The deployment you want to reconfigure")
+                                                        .setAutoComplete(true)
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "setting-key", "The setting you want to change")
+                                                        .setAutoComplete(true)
                                                         .setRequired(true),
                                                 new OptionData(OptionType.STRING, "setting-value", "The value you want to apply to the setting")
+                                                        .setAutoComplete(true)
                                                         .setRequired(true)
                                         )
                         ),
@@ -142,21 +149,25 @@ public class SlashCommandConfig {
                                 new SubcommandData("undeploy", "Undeploy a trading strategy deployment")
                                         .addOptions(
                                                 new OptionData(OptionType.INTEGER, "deployment-id", "The strategy deployment id")
+                                                        .setAutoComplete(true)
                                                         .setRequired(true)
                                         ),
                                 new SubcommandData("pause", "Pause a strategy deployment")
                                         .addOptions(
                                                 new OptionData(OptionType.INTEGER, "deployment-id", "The strategy deployment id")
+                                                        .setAutoComplete(true)
                                                         .setRequired(true)
                                         ),
                                 new SubcommandData("start", "Start/Resume a strategy deployment's operations")
                                         .addOptions(
                                                 new OptionData(OptionType.INTEGER, "deployment-id", "The strategy deployment to be resumed")
+                                                        .setAutoComplete(true)
                                                         .setRequired(true)
                                         ),
                                 new SubcommandData("show", "Show details about a strategy deployment")
                                         .addOptions(
                                                 new OptionData(OptionType.INTEGER, "deployment-id", "The strategy deployment to show")
+                                                        .setAutoComplete(true)
                                                         .setRequired(true)
                                         ),
                                 new SubcommandData("list", "List your deployed trading strategies")
