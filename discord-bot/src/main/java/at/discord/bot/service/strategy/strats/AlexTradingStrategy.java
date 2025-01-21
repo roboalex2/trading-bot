@@ -26,7 +26,8 @@ public class AlexTradingStrategy implements BaseStrategy {
             "SHORT_SMA_LENGTH", "50",
             "LONG_SMA_LENGTH", "150",
             "MIN_ORDER_INTERVAL_SECONDS", "30",
-            "TRADE_QUANTITY", "156524"  // Example default quantity
+            "MAX_ASSET_QUANTITY", "156524",
+            "REINVEST_EARNINGS", "false"
     );
 
     private final BarSeriesHolderService barSeriesHolderService;
@@ -66,7 +67,11 @@ public class AlexTradingStrategy implements BaseStrategy {
         int shortSmaLength = Integer.parseInt(settings.get("SHORT_SMA_LENGTH"));
         int longSmaLength = Integer.parseInt(settings.get("LONG_SMA_LENGTH"));
         long minOrderIntervalSeconds = Long.parseLong(settings.get("MIN_ORDER_INTERVAL_SECONDS"));
-        String quantity = settings.get("TRADE_QUANTITY"); // e.g., "156524"
+        String quantity = settings.get("MAX_ASSET_QUANTITY"); // e.g., "156524"
+        boolean reinvestEarnings = Boolean.parseBoolean(settings.get("REINVEST_EARNINGS"));
+        if (reinvestEarnings) {
+            throw new IllegalArgumentException("Ths trading strategy does not support the reinvestment of earnings.");
+        }
 
         // Get the BarSeries for the symbol
         BarSeries barSeries = barSeriesHolderService.getBarSeries(symbol);
