@@ -6,6 +6,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -19,6 +20,7 @@ public class BinanceCredentialsEntity {
     private byte[] apiKey;
     @Lob
     private byte[] apiSecret;
+
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

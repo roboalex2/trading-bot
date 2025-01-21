@@ -22,13 +22,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JoniTradingStrategy implements BaseStrategy {
 
     private static final Map<String, String> DEFAULT_SETTINGS = Map.of(
-            "SYMBOL", "BTCUSDT"
+            "SYMBOL", "BTCUSDT",
+            "RSI_LENGTH", "14",                 // Look-back period for RSI
+            "RSI_OVERBOUGHT", "70.0",          // Overbought threshold
+            "RSI_OVERSOLD", "30.0",            // Oversold threshold
+            "MIN_ORDER_INTERVAL_SECONDS", "30",// Minimum interval between trades
+            "TRADE_QUANTITY", "0.001"          // Example trade quantity
     );
-
-    private static final int RSI_LENGTH = 14; // RSI look-back period
-    private static final double RSI_OVERBOUGHT = 70.0;
-    private static final double RSI_OVERSOLD = 30.0;
-    private static final long MIN_ORDER_INTERVAL_SECONDS = 30; // Minimum time gap between orders
 
     private final BarSeriesHolderService barSeriesHolderService;
     private final SymbolPriceMonitorService symbolPriceMonitorService;
@@ -43,7 +43,7 @@ public class JoniTradingStrategy implements BaseStrategy {
 
     @Override
     public Map<String, String> getDefaultSetting() {
-        return DEFAULT_SETTINGS;
+        return new ConcurrentHashMap<>(DEFAULT_SETTINGS);
     }
 
     @Override
@@ -56,33 +56,43 @@ public class JoniTradingStrategy implements BaseStrategy {
         long deploymentId = deploymentContext.getDeploymentId();
         DeploymentState state = stateMap.computeIfAbsent(deploymentId, id -> new DeploymentState());
 
-        String symbol = deploymentContext.getSettings().get("SYMBOL");
+        // Fetch strategy settings
+        Map<String, String> settings = deploymentContext.getSettings();
+
+        String symbol = settings.get("SYMBOL");
+        int rsiLength = Integer.parseInt(settings.get("RSI_LENGTH"));
+        double rsiOverbought = Double.parseDouble(settings.get("RSI_OVERBOUGHT"));
+        double rsiOversold = Double.parseDouble(settings.get("RSI_OVERSOLD"));
+        long minOrderIntervalSeconds = Long.parseLong(settings.get("MIN_ORDER_INTERVAL_SECONDS"));
+        String quantity = settings.get("TRADE_QUANTITY");
+
+        // Fetch the BarSeries for the given symbol
         BarSeries barSeries = barSeriesHolderService.getBarSeries(symbol);
         if (barSeries == null || barSeries.isEmpty()) {
             symbolPriceMonitorService.registerSymbol(symbol);
             return;
         }
 
-        if (barSeries.getBarCount() < RSI_LENGTH) {
-            return; // Not enough data to calculate RSI
+        // Ensure enough bars are available to compute the RSI
+        if (barSeries.getBarCount() < rsiLength) {
+            return;
         }
 
         Instant now = Instant.now();
-        if (now.minusSeconds(MIN_ORDER_INTERVAL_SECONDS).isBefore(state.lastOrderTime)) {
+        if (now.minusSeconds(minOrderIntervalSeconds).isBefore(state.lastOrderTime)) {
             return; // Too soon to place another order
         }
 
-        // Compute RSI
+        // --- Compute RSI ---
         ClosePriceIndicator closePrice = new ClosePriceIndicator(barSeries);
-        RSIIndicator rsi = new RSIIndicator(closePrice, RSI_LENGTH);
+        RSIIndicator rsi = new RSIIndicator(closePrice, rsiLength);
 
         int endIndex = barSeries.getEndIndex();
         double rsiValue = rsi.getValue(endIndex).doubleValue();
 
-        // Strategy logic: Buy/Sell based on RSI thresholds
-        if (!state.inPosition && rsiValue < RSI_OVERSOLD) {
-            // Oversold: Place a BUY order
-            String quantity = "0.001"; // Example quantity
+        // --- Strategy Logic ---
+        if (!state.inPosition && rsiValue < rsiOversold) {
+            // RSI indicates oversold: Place BUY order
             try {
                 Long orderId = orderService.placeMarketOrder(
                         deploymentContext.getDiscordUserId(),
@@ -99,9 +109,8 @@ public class JoniTradingStrategy implements BaseStrategy {
             } catch (Exception e) {
                 log.error("Deployment {}: Error placing BUY order", deploymentId, e);
             }
-        } else if (state.inPosition && rsiValue > RSI_OVERBOUGHT) {
-            // Overbought: Place a SELL order
-            String quantity = "0.001"; // Example quantity
+        } else if (state.inPosition && rsiValue > rsiOverbought) {
+            // RSI indicates overbought: Place SELL order
             try {
                 Long orderId = orderService.placeMarketOrder(
                         deploymentContext.getDiscordUserId(),

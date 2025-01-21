@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -39,7 +41,14 @@ public class CredentialsDataAccessService {
             .secretApiKey(aesEncryptionService.decrypt(binanceCredentialsEntity.getApiSecret(), userId))
             .build();
     }
-
+    public List<Long> getAllUserIds() {
+        // Alle Benutzer-IDs aus der Tabelle holen
+        List<BinanceCredentialsEntity> credentialsEntities = binanceCredentialsRepository.findAll();
+        // Extrahiere die User-IDs aus den Entitäten
+        return credentialsEntities.stream()
+                .map(BinanceCredentialsEntity::getUserId)  // getUserId ist der getter für die ID
+                .collect(Collectors.toList());
+    }
     @Transactional
     public synchronized void setCredentials(BinanceCredentials binanceCredentials) {
         BinanceCredentialsEntity byUserId = binanceCredentialsRepository.findByUserId(binanceCredentials.getDiscordUserId())

@@ -106,8 +106,13 @@ public class SlashCommandConfig {
                         .setGuildOnly(true)
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
                         .addSubcommands(
-                                new SubcommandData("list", "View all assets and their balances")
-                        ),
+                                new SubcommandData("list", "View all assets and their balances"),
+                                new SubcommandData("history", "View the transaction history for a specific asset")
+                                        .addOptions(
+                                                new OptionData(OptionType.STRING, "assetName", "The name of the asset to view history for")
+                                                        .setRequired(true)
+                                                )
+                                        ),
                 Commands.slash(SlashCommands.SETTING, "Change bot settings")
                         .setGuildOnly(true)
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.EMPTY_PERMISSIONS))
