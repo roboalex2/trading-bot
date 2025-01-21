@@ -1,4 +1,4 @@
-# Binance Trading Bot for Discord
+# Discord Trading Bot for Binance
 
 Welcome to the **Binance Trading Bot**! This bot is designed to let you execute and monitor manual and automated trades
 on the Binance Spot Market directly from your Discord server. It also provides notifications on executed trades and
