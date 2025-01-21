@@ -193,7 +193,7 @@ Once the bot is up, it will register slash commands in your Discord server. Regi
 
 ## Additional Documentation
 
-A detailed **Software Requirements Specification (SRS)** is included in the repository. It covers:
+A detailed [**Software Requirements Specification (SRS)**](https://github.com/roboalex2/trading-bot/blob/main/doc/srs_revised.pdf) is included in the repository. It covers:
 - Project background
 - Functional requirements
 - Non-functional requirements
