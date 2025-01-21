@@ -141,7 +141,7 @@ Docker uses to configure the bot. Make sure to edit the following variables to m
 | `SPRING_DATASOURCE_PASSWORD` | Postgres password                                                                                      | `admin1234`                             |
 | `SPRING_DATASOURCE_URL`      | JDBC connection string pointing to the Postgres container                                              | `jdbc:postgresql://db:5432/trading-bot` |
 | `DISCORD_TOKEN`              | Your bot token from the Discord Developer Portal                                                       | `your-bot-token-here`                   |
-| `DISCORD_FALLBACK-CHANNEL`   | A numeric Discord channel ID used as a fallback as long as no message channels are designated messages | `123456789012345678`                    |
+| `DISCORD_fallbackChannel`    | A numeric Discord channel ID used as a fallback as long as no message channels are designated messages | `123456789012345678`                    |
 
 For example:
 
@@ -150,7 +150,7 @@ SPRING_DATASOURCE_USERNAME=admin
 SPRING_DATASOURCE_PASSWORD=admin1234
 SPRING_DATASOURCE_URL="jdbc:postgresql://db:5432/trading-bot"
 DISCORD_TOKEN="paste-your-discord-bot-token-here"
-DISCORD_FALLBACK-CHANNEL=1325967593739260007
+DISCORD_fallbackChannel=1325967593739260007
 ```
 
 > ⚠️ **Important**: Never commit your `.env` file with real tokens to a public repository.
