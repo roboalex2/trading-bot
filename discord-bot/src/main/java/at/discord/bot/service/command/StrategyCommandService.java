@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -207,7 +208,9 @@ public class StrategyCommandService implements CommandProcessor {
 
     private void handleListStrategies(SlashCommandInteractionEvent event) {
         Long userId = event.getUser().getIdLong();
-        List<StrategyDeploymentEntity> deployments = strategyService.listStrategyDeployments(userId);
+        List<StrategyDeploymentEntity> deployments = strategyService.listStrategyDeployments(userId).stream()
+                .sorted(Comparator.comparing(StrategyDeploymentEntity::getDeploymentId))
+                .toList();
 
         if (deployments.isEmpty()) {
             event.getHook().sendMessage("You have no strategy deployments.")
